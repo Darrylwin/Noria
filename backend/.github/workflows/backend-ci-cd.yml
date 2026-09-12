@@ -1,0 +1,93 @@
+name: Backend CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, master, develop ]
+    paths:
+      - 'backend/**'
+    tags:
+      - 'backend-v*'
+  pull_request:
+    branches: [ main, master, develop ]
+    paths:
+      - 'backend/**'
+
+jobs:
+  # -------------------------------------------------------------
+  # 1. Tests & Validation du Code Backend
+  # -------------------------------------------------------------
+  test:
+    name: Run Backend Tests
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: backend
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+          cache-dependency-path: backend/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run Linter
+        run: npm run lint --if-present
+
+      - name: Run Tests (Vitest)
+        run: npm test
+
+  # -------------------------------------------------------------
+  # 2. Automated Release basée sur package.json / Git Tag
+  # -------------------------------------------------------------
+  release:
+    name: Create GitHub Release
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+
+    defaults:
+      run:
+        working-directory: backend
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Extract Backend Version from package.json
+        id: get_version
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+          echo "TAG_NAME=backend-v$VERSION" >> $GITHUB_ENV
+
+      - name: Check if Tag Already Exists
+        id: check_tag
+        run: |
+          git fetch --tags
+          if git rev-parse "${{ env.TAG_NAME }}" >/dev/null 2>&1; then
+            echo "exists=true" >> $GITHUB_OUTPUT
+          else
+            echo "exists=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Tag and Create GitHub Release
+        if: steps.check_tag.outputs.exists == 'false'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ env.TAG_NAME }}
+          name: Backend Release v${{ env.VERSION }}
+          body: |
+            ### Backend Release v${{ env.VERSION }}
+            Automated release generated from `backend/package.json`.
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

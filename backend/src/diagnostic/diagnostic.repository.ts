@@ -1,22 +1,28 @@
 import { Injectable } from '@nestjs/common';
-import { PrismaClient } from '@prisma/client';
+import { PrismaService } from '../prisma/prisma.service.js';
 import { Answers, ScoringResult } from './domain/scoring.engine.js';
 import {
   computeRecommendation,
   RecommendationResult,
 } from './domain/recommendation.engine.js';
-import { DiagnosticResultDto } from './dto/diagnostic-result.dto.js';
+import { DiagnosticResponseDto } from './dto/diagnostic-response.dto.js';
 import { QUESTIONS_CATALOG } from './domain/questions.catalog.js';
 
+/**
+ * Couche de persistance responsable de l'accès aux données Prisma pour les diagnostics.
+ */
 @Injectable()
 export class DiagnosticRepository {
-  private readonly prisma = new PrismaClient();
+  constructor(private readonly prisma: PrismaService) {}
 
+  /**
+   * Enregistre une soumission de diagnostic et ses réponses détaillées.
+   */
   async save(
     answers: Answers,
     scoring: ScoringResult,
     recommendation: RecommendationResult,
-  ): Promise<DiagnosticResultDto> {
+  ): Promise<DiagnosticResponseDto> {
     const answerRows = Object.entries(answers).map(
       ([questionCode, answerCode]) => {
         const question = QUESTIONS_CATALOG.find((q) => q.code === questionCode);
@@ -50,14 +56,17 @@ export class DiagnosticRepository {
     return this.toDto(submission.id, scoring, recommendation);
   }
 
-  async findById(id: string): Promise<DiagnosticResultDto | null> {
+  /**
+   * Recherche un diagnostic par ID et reconstitue le DTO complet avec recommandations.
+   */
+  async findById(id: string): Promise<DiagnosticResponseDto | null> {
     const submission = await this.prisma.diagnosticSubmission.findUnique({
       where: { id },
     });
 
     if (!submission) return null;
 
-    // Reconstituer le scoring depuis les colonnes persistées
+    // Reconstitution du ScoringResult à partir des valeurs persistées en BDD
     const scoring: ScoringResult = {
       formalizationScore: submission.formalizationScore,
       accountingRawScore: submission.accountingRawScore,
@@ -73,17 +82,20 @@ export class DiagnosticRepository {
       cascadeTriggered: submission.cascadeTriggered,
     };
 
-    // Restituer les textes depuis le moteur de recommandation (déterministe)
+    // Calcul déterministe des textes de recommandation
     const recommendation = computeRecommendation(scoring);
 
     return this.toDto(submission.id, scoring, recommendation);
   }
 
+  /**
+   * Mappe les objets du domaine et la clé primaire vers le DTO de réponse client.
+   */
   private toDto(
     id: string,
     scoring: ScoringResult,
     recommendation: RecommendationResult,
-  ): DiagnosticResultDto {
+  ): DiagnosticResponseDto {
     return {
       id,
       globalScore: scoring.globalScore,

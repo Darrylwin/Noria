@@ -12,6 +12,10 @@ import {
   Q9Answer,
 } from '../enums/answers.enum.js';
 
+/**
+ * Payload d'entrée pour la soumission d'un diagnostic.
+ * Valide strictement que chaque question Q1 à Q10 reçoit une réponse valide issue de son énumération dédiée.
+ */
 export class SubmitDiagnosticDto {
   @IsEnum(Q1Answer)
   q1: Q1Answer;

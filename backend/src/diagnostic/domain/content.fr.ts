@@ -1,29 +1,38 @@
-import { Dimension } from '../enums/dimension.enum.js';
-import { MaturityLevel } from './scoring.engine.js';
+import { Dimension, MaturityLevel } from '../enums/dimension.enum.js';
 
 // --- Types ---
+
+/**
+ * Structure de contenu pour un niveau de maturité globale.
+ */
 export interface MaturityLevelContent {
   label: string;
   description: string;
   generalRecommendation: string;
 }
 
+/**
+ * Recommandations déclinées par niveau de score (faible, moyen, élevé) pour une dimension.
+ */
 export interface DimensionLevelRecommendation {
   low: string;
   medium: string;
   high: string;
 }
 
+/**
+ * Messages d'explication spécifiques déclenchés par la règle de cascade.
+ */
 export interface CascadeContent {
   main: string;
   secondary: string;
 }
 
-// --- Seuils de niveau par dimension (identiques aux seuils globaux) ---
+// --- Seuils de niveau par dimension ---
 export const DIMENSION_LEVEL_THRESHOLD_LOW = 45;
 export const DIMENSION_LEVEL_THRESHOLD_HIGH = 75;
 
-// --- Contenu par niveau de maturité ---
+// --- Contenu par niveau de maturité globale ---
 export const MATURITY_LEVEL_CONTENT: Record<
   MaturityLevel,
   MaturityLevelContent
@@ -51,7 +60,7 @@ export const MATURITY_LEVEL_CONTENT: Record<
   },
 };
 
-// --- Recommandations par dimension et par niveau ---
+// --- Recommandations par dimension et par niveau de score ---
 export const DIMENSION_RECOMMENDATIONS: Record<
   Dimension,
   DimensionLevelRecommendation
@@ -76,7 +85,7 @@ export const DIMENSION_RECOMMENDATIONS: Record<
   },
 };
 
-// --- Contenu cascade ---
+// --- Contenu spécifique à la règle de cascade ---
 export const CASCADE_CONTENT: CascadeContent = {
   main: "Votre structuration légale et administrative est aujourd'hui le principal levier de progression pour votre entreprise. Elle conditionne la fiabilité de vos documents et facilite l'accès aux opportunités de financement.",
   secondary:

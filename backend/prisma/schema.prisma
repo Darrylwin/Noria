@@ -7,51 +7,105 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+/// Représente une évaluation complète de diagnostic NORIA effectuée par une entreprise.
+/// Stocke l'historique des scores calculés, le niveau de maturité attribué et les indicateurs métiers.
 model DiagnosticSubmission {
-  id        String   @id @default(uuid())
+  /// Identifiant unique de la soumission (UUID v4)
+  id String @id @default(uuid())
+
+  /// Date et heure de création de la soumission en base de données
   createdAt DateTime @default(now()) @map("created_at")
 
+  /// Version du moteur de calcul utilisée (garantit la traçabilité en cas d'évolution future du barème)
   scoringEngineVersion String @default("v1") @map("scoring_engine_version")
 
-  formalizationScore   Float @map("formalization_score")
-  accountingRawScore   Float @map("accounting_raw_score")
+  // --- SCORES PAR DIMENSION ---
+
+  /// Score obtenu sur la dimension Formalisation (sur 100)
+  formalizationScore Float @map("formalization_score")
+
+  /// Score brut obtenu en Comptabilité avant application d'éventuels plafonnements
+  accountingRawScore Float @map("accounting_raw_score")
+
+  /// Score final de Comptabilité retenu après vérification des règles de dépendance
   accountingFinalScore Float @map("accounting_final_score")
-  fundingRawScore      Float @map("funding_raw_score")
-  fundingFinalScore    Float @map("funding_final_score")
-  globalScore          Float @map("global_score")
 
-  maturityLevel      MaturityLevel @map("maturity_level")
-  strongestDimension Dimension     @map("strongest_dimension")
-  improvementFocus   Dimension     @map("improvement_focus")
-  cascadeTriggered   Boolean       @default(false) @map("cascade_triggered")
+  /// Score brut obtenu en Financement avant application d'éventuels plafonnements
+  fundingRawScore Float @map("funding_raw_score")
 
+  /// Score final de Financement retenu après vérification des règles de dépendance
+  fundingFinalScore Float @map("funding_final_score")
+
+  /// Score global de maturité (sur 100) synthétisant la performance globale
+  globalScore Float @map("global_score")
+
+  // --- RÉSULTATS ET RÈGLES MÉTIER ---
+
+  /// Niveau de maturité retenu (NEEDS_STRENGTHENING, IN_PROGRESS, ADVANCED)
+  maturityLevel MaturityLevel @map("maturity_level")
+
+  /// Dimension d'excellence ayant obtenu le meilleur score
+  strongestDimension Dimension @map("strongest_dimension")
+
+  /// Dimension prioritaire identifiée pour les axes d'amélioration
+  improvementFocus Dimension @map("improvement_focus")
+
+  /// Indique si le mécanisme de plafonnement en cascade a été déclenché (ex: formalisation insuffisante)
+  cascadeTriggered Boolean @default(false) @map("cascade_triggered")
+
+  /// Liste des réponses individuelles associées à ce diagnostic
   answers DiagnosticAnswer[]
 
   @@map("diagnostic_submissions")
 }
 
+/// Enregistre la réponse sélectionnée par l'utilisateur pour une question donnée lors d'un diagnostic.
 model DiagnosticAnswer {
-  id           String               @id @default(uuid())
-  submissionId String               @map("submission_id")
-  submission   DiagnosticSubmission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+  /// Identifiant unique de l'enregistrement de réponse (UUID v4)
+  id String @id @default(uuid())
 
+  /// Identifiant de la soumission de diagnostic associée
+  submissionId String @map("submission_id")
+
+  /// Relation vers la soumission parente avec suppression en cascade si le diagnostic est supprimé
+  submission DiagnosticSubmission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+
+  /// Code identifiant la question du questionnaire (ex: Q1, Q2, ..., Q10)
   questionCode String @map("question_code")
-  answerCode   String @map("answer_code")
-  scoreValue   Int    @map("score_value")
 
+  /// Code de l'option de réponse choisie par l'utilisateur (ex: Q1_A1)
+  answerCode String @map("answer_code")
+
+  /// Valeur de point attribuée à l'option choisie
+  scoreValue Int @map("score_value")
+
+  /// Empêche la présence de doublons pour une même question dans une seule soumission
   @@unique([submissionId, questionCode])
+  /// Index facilitant les jointures et recherches de réponses par soumission
   @@index([submissionId])
   @@map("diagnostic_answers")
 }
 
+/// Représente les paliers de maturité globale d'une entreprise dans le système NORIA.
 enum MaturityLevel {
+  /// À renforcer : Entreprise présentant des fragilités structurelles prioritaires
   NEEDS_STRENGTHENING
+
+  /// En consolidation : Base existante mais nécessitant une formalisation accrue
   IN_PROGRESS
+
+  /// Avancé : Entreprise structurée, conforme et préparée aux exigences financières
   ADVANCED
 }
 
+/// Les trois axes d'analyse évalués lors du diagnostic.
 enum Dimension {
+  /// Formalisation juridique, fiscale et administrative
   FORMALIZATION
+
+  /// Tenue comptable, suivi des pièces et états financiers
   ACCOUNTING
+
+  /// Solvabilité, gestion du BFR et capacité d'endettement
   FUNDING
 }

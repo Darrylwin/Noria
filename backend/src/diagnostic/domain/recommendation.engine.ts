@@ -1,5 +1,5 @@
 import { Dimension } from '../enums/dimension.enum.js';
-import { MaturityLevel, ScoringResult } from './scoring.engine.js';
+import { ScoringResult } from './scoring.engine.js';
 import {
   CASCADE_CONTENT,
   DIMENSION_LEVEL_THRESHOLD_HIGH,
@@ -8,7 +8,9 @@ import {
   MATURITY_LEVEL_CONTENT,
 } from './content.fr.js';
 
-// --- Types ---
+/**
+ * Structure du résultat de recommandation retourné à l'utilisateur.
+ */
 export interface RecommendationResult {
   maturityLabel: string;
   maturityDescription: string;
@@ -16,13 +18,19 @@ export interface RecommendationResult {
   secondaryRecommendations: string[];
 }
 
-// --- Résolution du niveau d'une dimension ---
+/**
+ * Résout le niveau qualitatif ('low' | 'medium' | 'high') d'une dimension
+ * selon les seuils métier définis dans le catalogue de contenu.
+ */
 function resolveDimensionLevel(score: number): 'low' | 'medium' | 'high' {
   if (score < DIMENSION_LEVEL_THRESHOLD_LOW) return 'low';
   if (score < DIMENSION_LEVEL_THRESHOLD_HIGH) return 'medium';
   return 'high';
 }
 
+/**
+ * Extrait le score final retenu pour la dimension identifiée comme axe d'amélioration.
+ */
 function getDimensionFinalScore(
   dimension: Dimension,
   scoring: ScoringResult,
@@ -37,13 +45,25 @@ function getDimensionFinalScore(
   }
 }
 
-// --- Point d'entrée public ---
+/**
+ * Fonction pure de génération de recommandations stratégiques.
+ *
+ * JUSTIFICATION MÉTIER :
+ * 1. Si la cascade est déclenchée (cascadeTriggered === true), le moteur priorise immédiatement
+ *    les messages d'alerte sur la formalisation légale et administrative (CASCADE_CONTENT),
+ *    car la non-formalisation bloque la valeur réelle des autres dimensions.
+ * 2. Hors cascade, le moteur évalue le score final de l'axe d'amélioration (improvementFocus)
+ *    pour sélectionner la recommandation la plus pertinente (faible, moyen ou élevé), et
+ *    l'accompagne de la recommandation générale associée au niveau de maturité global
+ *    (section 13.3), qui sert de repère de priorisation en complément de l'axe ciblé.
+ */
 export function computeRecommendation(
   scoring: ScoringResult,
 ): RecommendationResult {
-  const { label, description } =
-    MATURITY_LEVEL_CONTENT[scoring.maturityLevel as MaturityLevel];
+  const { label, description, generalRecommendation } =
+    MATURITY_LEVEL_CONTENT[scoring.maturityLevel];
 
+  // Cas 1 : Cascade déclenchée -> Recommandation prioritaire de formalisation
   if (scoring.cascadeTriggered) {
     return {
       maturityLabel: label,
@@ -53,6 +73,7 @@ export function computeRecommendation(
     };
   }
 
+  // Cas 2 : Parcours standard basé sur l'axe d'amélioration
   const focusScore = getDimensionFinalScore(scoring.improvementFocus, scoring);
   const level = resolveDimensionLevel(focusScore);
   const mainRecommendation =
@@ -62,6 +83,6 @@ export function computeRecommendation(
     maturityLabel: label,
     maturityDescription: description,
     mainRecommendation,
-    secondaryRecommendations: [],
+    secondaryRecommendations: [generalRecommendation],
   };
 }

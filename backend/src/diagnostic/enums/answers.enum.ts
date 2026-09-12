@@ -1,3 +1,8 @@
+/**
+ * Énumérations des réponses autorisées pour chaque question (Q1 à Q10).
+ */
+
+// --- DIMENSION 1 : FORMALISATION ---
 // Q1 - Enregistrement légal
 export enum Q1Answer {
   NOT_REGISTERED = 'NOT_REGISTERED',
@@ -26,6 +31,7 @@ export enum Q4Answer {
   WELL_ORGANIZED = 'WELL_ORGANIZED',
 }
 
+// --- DIMENSION 2 : COMPTABILITÉ ---
 // Q5 - Méthode comptable
 export enum Q5Answer {
   NONE = 'NONE',
@@ -48,6 +54,7 @@ export enum Q7Answer {
   UNDER_ONE_YEAR_OLD = 'UNDER_ONE_YEAR_OLD',
 }
 
+// --- DIMENSION 3 : PRÉPARATION AU FINANCEMENT ---
 // Q8 - Financement externe
 export enum Q8Answer {
   NEVER = 'NEVER',

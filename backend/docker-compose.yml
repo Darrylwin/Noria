@@ -11,5 +11,19 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: "postgresql://noria:noria@postgres:5432/noria?schema=public"
+      PORT: 3000
+    depends_on:
+      - postgres
+
 volumes:
   postgres_data:

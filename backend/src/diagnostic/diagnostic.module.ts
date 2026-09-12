@@ -3,6 +3,10 @@ import { DiagnosticController } from './diagnostic.controller.js';
 import { DiagnosticService } from './diagnostic.service.js';
 import { DiagnosticRepository } from './diagnostic.repository.js';
 
+/**
+ * Module d'encapsulation de la fonctionnalité de diagnostic NORIA.
+ * Regroupe le contrôleur REST, le service métier et le repository de persistance.
+ */
 @Module({
   controllers: [DiagnosticController],
   providers: [DiagnosticService, DiagnosticRepository],

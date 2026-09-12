@@ -12,12 +12,18 @@ import {
   Q9Answer,
 } from '../enums/answers.enum.js';
 
+/**
+ * Représente une option de réponse pour une question donnée.
+ */
 export interface QuestionOption {
   code: string;
   label: string;
   scoreValue: number;
 }
 
+/**
+ * Définition technique d'une question du catalogue NORIA.
+ */
 export interface QuestionDefinition {
   code: string;
   dimension: Dimension;
@@ -26,7 +32,12 @@ export interface QuestionDefinition {
   options: QuestionOption[];
 }
 
+/**
+ * Catalogue figé des 10 questions de la Combinaison B (Formalisation, Comptabilité, Financement).
+ * Source de vérité unique servie au frontend via l'endpoint GET /questions.
+ */
 export const QUESTIONS_CATALOG: QuestionDefinition[] = [
+  // --- DIMENSION 1 : FORMALISATION ---
   {
     code: 'Q1',
     dimension: Dimension.FORMALIZATION,
@@ -105,6 +116,8 @@ export const QUESTIONS_CATALOG: QuestionDefinition[] = [
       },
     ],
   },
+
+  // --- DIMENSION 2 : COMPTABILITÉ ---
   {
     code: 'Q5',
     dimension: Dimension.ACCOUNTING,
@@ -172,6 +185,8 @@ export const QUESTIONS_CATALOG: QuestionDefinition[] = [
       },
     ],
   },
+
+  // --- DIMENSION 3 : PRÉPARATION AU FINANCEMENT ---
   {
     code: 'Q8',
     dimension: Dimension.FUNDING,

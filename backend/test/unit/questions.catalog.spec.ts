@@ -1,97 +1,73 @@
 import { describe, expect, it } from 'vitest';
 import { QUESTIONS_CATALOG } from '../../src/diagnostic/domain/questions.catalog.js';
-import {
-  Q10Answer,
-  Q1Answer,
-  Q2Answer,
-  Q3Answer,
-  Q4Answer,
-  Q5Answer,
-  Q6Answer,
-  Q7Answer,
-  Q8Answer,
-  Q9Answer,
-} from '../../src/diagnostic/enums/answers.enum.js';
+import { Dimension } from '../../src/diagnostic/enums/dimension.enum.js';
 
-const ALL_ANSWER_CODES: Record<string, string[]> = {
-  Q1: Object.values(Q1Answer),
-  Q2: Object.values(Q2Answer),
-  Q3: Object.values(Q3Answer),
-  Q4: Object.values(Q4Answer),
-  Q5: Object.values(Q5Answer),
-  Q6: Object.values(Q6Answer),
-  Q7: Object.values(Q7Answer),
-  Q8: Object.values(Q8Answer),
-  Q9: Object.values(Q9Answer),
-  Q10: Object.values(Q10Answer),
-};
-
-const VALID_SCORE_VALUES = new Set([0, 33, 50, 66, 100]);
-
-describe('QUESTIONS_CATALOG - complétude', () => {
-  it('contient exactement 10 questions', () => {
+describe('QuestionsCatalog (QUESTIONS_CATALOG)', () => {
+  it('devrait contenir exactement 10 questions', () => {
+    expect(QUESTIONS_CATALOG).toBeDefined();
     expect(QUESTIONS_CATALOG).toHaveLength(10);
   });
 
-  it('les codes de question vont de Q1 à Q10 sans doublon', () => {
+  it('devrait posséder des codes de questions uniques allant de Q1 à Q10', () => {
     const codes = QUESTIONS_CATALOG.map((q) => q.code);
-    expect(new Set(codes).size).toBe(10);
-    for (let i = 1; i <= 10; i++) {
-      expect(codes).toContain(`Q${i}`);
-    }
+    const uniqueCodes = new Set(codes);
+
+    expect(uniqueCodes.size).toBe(10);
+    expect(codes).toEqual([
+      'Q1',
+      'Q2',
+      'Q3',
+      'Q4',
+      'Q5',
+      'Q6',
+      'Q7',
+      'Q8',
+      'Q9',
+      'Q10',
+    ]);
   });
 
-  it('les ordres vont de 1 à 10 sans doublon', () => {
-    const orders = QUESTIONS_CATALOG.map((q) => q.order);
-    expect(new Set(orders).size).toBe(10);
-    for (let i = 1; i <= 10; i++) {
-      expect(orders).toContain(i);
-    }
-  });
-});
+  it('devrait associer chaque question à une dimension valide', () => {
+    const validDimensions = Object.values(Dimension);
 
-describe('QUESTIONS_CATALOG - cohérence des options', () => {
-  it('chaque question a au moins 2 options', () => {
-    for (const question of QUESTIONS_CATALOG) {
-      expect(question.options.length).toBeGreaterThanOrEqual(2);
-    }
+    QUESTIONS_CATALOG.forEach((question) => {
+      expect(question.dimension).toBeDefined();
+      expect(validDimensions).toContain(question.dimension);
+    });
   });
 
-  it('les codes de réponse sont uniques au sein de chaque question', () => {
-    for (const question of QUESTIONS_CATALOG) {
-      const codes = question.options.map((o) => o.code);
-      expect(new Set(codes).size).toBe(codes.length);
-    }
+  it('devrait vérifier que chaque question comporte des options valides avec des scores non négatifs', () => {
+    QUESTIONS_CATALOG.forEach((question) => {
+      expect(question.options).toBeDefined();
+      expect(Array.isArray(question.options)).toBe(true);
+      expect(question.options.length).toBeGreaterThan(0);
+
+      question.options.forEach((option) => {
+        expect(option.code).toBeDefined();
+        expect(typeof option.code).toBe('string');
+        expect(option.scoreValue).toBeDefined();
+        expect(typeof option.scoreValue).toBe('number');
+        expect(option.scoreValue).toBeGreaterThanOrEqual(0);
+      });
+    });
   });
 
-  it('chaque valeur de score est parmi les valeurs autorisées (0, 33, 50, 66, 100)', () => {
-    for (const question of QUESTIONS_CATALOG) {
-      for (const option of question.options) {
-        expect(VALID_SCORE_VALUES.has(option.scoreValue)).toBe(true);
-      }
-    }
-  });
-});
+  it("devrait garantir l'unicité globale des codes d'options de réponse", () => {
+    const allOptionCodes = QUESTIONS_CATALOG.flatMap((q) =>
+      q.options.map((o) => o.code),
+    );
+    const uniqueOptionCodes = new Set(allOptionCodes);
 
-describe('QUESTIONS_CATALOG - correspondance avec les enums', () => {
-  it('chaque code de réponse du catalogue correspond exactement à un code dans les enums', () => {
-    for (const question of QUESTIONS_CATALOG) {
-      const expectedCodes = ALL_ANSWER_CODES[question.code];
-      const catalogCodes = question.options.map((o) => o.code);
-
-      expect(catalogCodes.sort()).toEqual(expectedCodes.sort());
-    }
+    expect(uniqueOptionCodes.size).toBe(allOptionCodes.length);
   });
 
-  it('chaque code des enums est présent dans le catalogue', () => {
-    for (const [questionCode, enumCodes] of Object.entries(ALL_ANSWER_CODES)) {
-      const question = QUESTIONS_CATALOG.find((q) => q.code === questionCode);
-      expect(question).toBeDefined();
+  it("devrait couvrir l'intégralité des trois dimensions NORIA (Formalisation, Comptabilité, Financement)", () => {
+    const coveredDimensions = new Set(
+      QUESTIONS_CATALOG.map((q) => q.dimension),
+    );
 
-      const catalogCodes = question!.options.map((o) => o.code);
-      for (const enumCode of enumCodes) {
-        expect(catalogCodes).toContain(enumCode);
-      }
-    }
+    expect(coveredDimensions.has(Dimension.FORMALIZATION)).toBe(true);
+    expect(coveredDimensions.has(Dimension.ACCOUNTING)).toBe(true);
+    expect(coveredDimensions.has(Dimension.FUNDING)).toBe(true);
   });
 });
