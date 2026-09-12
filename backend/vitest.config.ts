@@ -19,6 +19,15 @@ export default defineConfig({
         'src/**/*.module.ts',
         'src/**/*.dto.ts',
         'src/**/*.enum.ts',
+        // Infrastructure exclue de la couverture (décision explicite) :
+        // logique de cycle de vie, adaptateurs et gestion d'erreurs
+        // transverses, non couverts par choix.
+        'src/prisma/prisma.service.ts',
+        'src/common/logger/json.logger.ts',
+        'src/common/filters/http-exception.filter.ts',
+        'src/common/interceptors/logging.interceptor.ts',
+        'src/health/health.controller.ts',
+        'src/config/env.validation.ts',
       ],
       thresholds: {
         lines: 80,
