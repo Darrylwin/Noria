@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { QUESTIONS_CATALOG } from '../../src/diagnostic/domain/questions.catalog';
-import { Dimension } from '../../src/diagnostic/enums/dimension.enum';
+import { QUESTIONS_CATALOG } from '../../src/diagnostic/domain/questions.catalog.js';
+import { Dimension } from '../../src/diagnostic/enums/dimension.enum.js';
 
 describe('QuestionsCatalog (QUESTIONS_CATALOG)', () => {
   it('devrait contenir exactement 10 questions', () => {

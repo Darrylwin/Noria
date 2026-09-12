@@ -2,11 +2,11 @@ import { describe, expect, it } from 'vitest';
 import {
   Answers,
   computeScore,
-} from '../../src/diagnostic/domain/scoring.engine';
+} from '../../src/diagnostic/domain/scoring.engine.js';
 import {
   Dimension,
   MaturityLevel,
-} from '../../src/diagnostic/enums/dimension.enum';
+} from '../../src/diagnostic/enums/dimension.enum.js';
 import {
   Q10Answer,
   Q1Answer,
@@ -18,7 +18,7 @@ import {
   Q7Answer,
   Q8Answer,
   Q9Answer,
-} from '../../src/diagnostic/enums/answers.enum';
+} from '../../src/diagnostic/enums/answers.enum.js';
 
 describe('ScoringEngine (computeScore)', () => {
   /**

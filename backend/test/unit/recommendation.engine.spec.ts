@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { computeRecommendation } from '../../src/diagnostic/domain/recommendation.engine';
-import { ScoringResult } from '../../src/diagnostic/domain/scoring.engine';
+import { computeRecommendation } from '../../src/diagnostic/domain/recommendation.engine.js';
+import { ScoringResult } from '../../src/diagnostic/domain/scoring.engine.js';
 import {
   Dimension,
   MaturityLevel,
-} from '../../src/diagnostic/enums/dimension.enum';
+} from '../../src/diagnostic/enums/dimension.enum.js';
 
 describe('RecommendationEngine (computeRecommendation)', () => {
   /**

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { computeScore } from '../../src/diagnostic/domain/scoring.engine';
-import { computeRecommendation } from '../../src/diagnostic/domain/recommendation.engine';
-import { Dimension } from '../../src/diagnostic/enums/dimension.enum';
+import { computeScore } from '../../src/diagnostic/domain/scoring.engine.js';
+import { computeRecommendation } from '../../src/diagnostic/domain/recommendation.engine.js';
+import { Dimension } from '../../src/diagnostic/enums/dimension.enum.js';
 import { MaturityLevel } from '@prisma/client';
 
 const VALID_ANSWERS = {

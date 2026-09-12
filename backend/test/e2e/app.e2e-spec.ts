@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import request from 'supertest';
-import { AppModule } from '../../src/app.module';
+import { AppModule } from '../../src/app.module.js';
 import {
   Q10Answer,
   Q1Answer,
@@ -18,8 +18,8 @@ import {
   Q7Answer,
   Q8Answer,
   Q9Answer,
-} from '../../src/diagnostic/enums/answers.enum';
-import { PrismaService } from '../../src/prisma/prisma.service';
+} from '../../src/diagnostic/enums/answers.enum.js';
+import { PrismaService } from '../../src/prisma/prisma.service.js';
 
 describe('Noria API (E2E)', () => {
   let app: INestApplication;
