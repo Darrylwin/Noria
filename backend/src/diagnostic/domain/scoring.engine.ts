@@ -244,7 +244,7 @@ export function computeScore(answers: Answers): ScoringResult {
     fundingFinalScore,
   );
 
-  // Step 10 — arrondi unique, en toute fin
+  // Step 10 - arrondi unique, en toute fin
   const rounded = roundScores({
     formalizationScore,
     accountingRawScore,

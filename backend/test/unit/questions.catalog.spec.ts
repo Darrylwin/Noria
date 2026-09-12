@@ -28,7 +28,7 @@ const ALL_ANSWER_CODES: Record<string, string[]> = {
 
 const VALID_SCORE_VALUES = new Set([0, 33, 50, 66, 100]);
 
-describe('QUESTIONS_CATALOG — complétude', () => {
+describe('QUESTIONS_CATALOG - complétude', () => {
   it('contient exactement 10 questions', () => {
     expect(QUESTIONS_CATALOG).toHaveLength(10);
   });
@@ -50,7 +50,7 @@ describe('QUESTIONS_CATALOG — complétude', () => {
   });
 });
 
-describe('QUESTIONS_CATALOG — cohérence des options', () => {
+describe('QUESTIONS_CATALOG - cohérence des options', () => {
   it('chaque question a au moins 2 options', () => {
     for (const question of QUESTIONS_CATALOG) {
       expect(question.options.length).toBeGreaterThanOrEqual(2);
@@ -73,7 +73,7 @@ describe('QUESTIONS_CATALOG — cohérence des options', () => {
   });
 });
 
-describe('QUESTIONS_CATALOG — correspondance avec les enums', () => {
+describe('QUESTIONS_CATALOG - correspondance avec les enums', () => {
   it('chaque code de réponse du catalogue correspond exactement à un code dans les enums', () => {
     for (const question of QUESTIONS_CATALOG) {
       const expectedCodes = ALL_ANSWER_CODES[question.code];
