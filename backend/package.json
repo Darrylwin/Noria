@@ -1,8 +1,8 @@
 {
   "name": "noria",
   "version": "0.0.1",
-  "description": "",
-  "author": "",
+  "description": "Évaluez la structuration de votre entreprise et identifiez les leviers prioritaires pour son développement.",
+  "author": "LOGOSSOU Darryl-win",
   "private": true,
   "license": "UNLICENSED",
   "type": "module",
