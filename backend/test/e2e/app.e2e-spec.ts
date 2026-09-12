@@ -1,4 +1,4 @@
-import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import {
   INestApplication,
   ValidationPipe,
@@ -19,6 +19,7 @@ import {
   Q8Answer,
   Q9Answer,
 } from '../../src/diagnostic/enums/answers.enum.js';
+import { PrismaService } from '../../src/prisma/prisma.service.js';
 
 describe('Noria API (E2E)', () => {
   let app: INestApplication;
@@ -40,10 +41,42 @@ describe('Noria API (E2E)', () => {
     q10: Object.values(Q10Answer)[0],
   });
 
+  const mockSubmissionRow = {
+    id: 'uuid-mocked',
+    formalizationScore: 80,
+    accountingRawScore: 75,
+    accountingFinalScore: 75,
+    fundingRawScore: 70,
+    fundingFinalScore: 70,
+    globalScore: 76,
+    maturityLevel: 'ADVANCED',
+    strongestDimension: 'FORMALIZATION',
+    improvementFocus: 'FUNDING',
+    cascadeTriggered: false,
+    scoringEngineVersion: 'v1',
+    answers: [],
+  };
+
   beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
-    }).compile();
+    })
+      .overrideProvider(PrismaService)
+      .useValue({
+        onModuleInit: vi.fn(),
+        onModuleDestroy: vi.fn(),
+        $queryRaw: vi.fn().mockResolvedValue([{ '?column?': 1 }]),
+        diagnosticSubmission: {
+          create: vi.fn().mockImplementation(async () => mockSubmissionRow),
+          findUnique: vi.fn().mockImplementation(async ({ where }) => {
+            if (where.id === mockSubmissionRow.id) {
+              return mockSubmissionRow;
+            }
+            return null;
+          }),
+        },
+      })
+      .compile();
 
     app = moduleFixture.createNestApplication();
 
