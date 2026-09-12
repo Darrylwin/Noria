@@ -31,7 +31,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: 'npm'
           cache-dependency-path: backend/package-lock.json
 
@@ -43,6 +43,11 @@ jobs:
 
       - name: Run Tests (Vitest)
         run: npm test
+        env:
+          NODE_ENV: test
+          PORT: 3000
+          DATABASE_URL: "postgresql://noria:noria@localhost:5455/noria?schema=public"
+          FRONTEND_ORIGIN: "http://localhost:5173"
 
   # -------------------------------------------------------------
   # 2. Automated Release basée sur package.json / Git Tag
