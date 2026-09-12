@@ -1,12 +1,12 @@
 import { describe, it, expect } from 'vitest';
-import { computeRecommendation } from './recommendation.engine.js';
-import { MaturityLevel, ScoringResult } from './scoring.engine.js';
-import { Dimension } from '../enums/dimension.enum.js';
+import { computeRecommendation } from '../../src/diagnostic/domain/recommendation.engine.js';
+import { MaturityLevel, ScoringResult } from '../../src/diagnostic/domain/scoring.engine.js';
+import { Dimension } from '../../src/diagnostic/enums/dimension.enum.js';
 import {
   CASCADE_CONTENT,
   DIMENSION_RECOMMENDATIONS,
   MATURITY_LEVEL_CONTENT,
-} from './content.fr.js';
+} from '../../src/diagnostic/domain/content.fr.js';
 
 function makeScoring(overrides: Partial<ScoringResult>): ScoringResult {
   return {

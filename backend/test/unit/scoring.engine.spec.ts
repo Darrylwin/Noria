@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { computeScore, MaturityLevel } from './scoring.engine.js';
-import { Dimension } from '../enums/dimension.enum.js';
+import { computeScore, MaturityLevel } from '../../src/diagnostic/domain/scoring.engine.js';
+import { Dimension } from '../../src/diagnostic/enums/dimension.enum.js';
 
 // Helpers pour construire des réponses rapidement
 const allMin = () => ({

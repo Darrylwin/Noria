@@ -6,8 +6,15 @@ export default defineConfig({
   // added by `nest g library`.
   plugins: [tsconfigPaths()],
   test: {
-    globals: true,
-    root: './',
-    include: ['**/*.spec.ts'],
+    include: ['test/**/*.spec.ts', 'test/**/*.e2e-spec.ts'],
+    environment: 'node',
+    pool: 'forks',
+    poolOptions: {
+      forks: {
+        singleFork: true,
+      },
+    },
+    hookTimeout: 30000,
+    testTimeout: 15000,
   },
 });
