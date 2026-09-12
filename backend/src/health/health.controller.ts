@@ -1,4 +1,5 @@
 import { Controller, Get, ServiceUnavailableException } from '@nestjs/common';
+import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { PrismaService } from '../prisma/prisma.service.js';
 
 /**
@@ -17,6 +18,7 @@ export interface HealthCheckResponse {
   };
 }
 
+@ApiTags('health')
 @Controller('health')
 export class HealthController {
   constructor(private readonly prisma: PrismaService) {}
@@ -26,6 +28,11 @@ export class HealthController {
    * Effectue une requête réelle sur la BDD et contrôle l'état du processus Node.js.
    */
   @Get()
+  @ApiOperation({
+    summary: 'Vérifie la disponibilité du service et de la base de données',
+  })
+  @ApiResponse({ status: 200, description: 'Service opérationnel.' })
+  @ApiResponse({ status: 503, description: 'Base de données inaccessible.' })
   async check(): Promise<HealthCheckResponse> {
     const memory = process.memoryUsage();
     const uptime = Math.floor(process.uptime());

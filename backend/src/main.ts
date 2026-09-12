@@ -1,8 +1,10 @@
 import { Logger, ValidationPipe, VersioningType } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import type { NestExpressApplication } from '@nestjs/platform-express';
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import { createRequire } from 'node:module';
+import type { NextFunction, Request, Response } from 'express';
 import { json, urlencoded } from 'express';
 import type { HelmetOptions } from 'helmet';
 import { AppModule } from './app.module.js';
@@ -29,6 +31,40 @@ type HelmetMiddleware = (
 const helmet: (
   options?: Readonly<HelmetOptions>,
 ) => HelmetMiddleware = require('helmet');
+
+// CSP appliquée à toute l'API métier : la plus stricte possible.
+const strictCsp: HelmetOptions['contentSecurityPolicy'] = {
+  directives: {
+    defaultSrc: ["'self'"],
+    scriptSrc: ["'self'"],
+    styleSrc: ["'self'"],
+    imgSrc: ["'self'"],
+    connectSrc: ["'self'"],
+    fontSrc: ["'self'"],
+    objectSrc: ["'none'"],
+    frameAncestors: ["'none'"],
+  },
+};
+
+/**
+ * CSP dédiée à /docs* : Swagger UI embarque un script inline (JSON.stringify du contrat
+ * OpenAPI) directement dans sa page HTML générée par SwaggerModule, impossible à
+ * supprimer sans réécrire le template. Cette politique plus permissive n'est donc
+ * jamais appliquée au reste de l'API, pour ne pas affaiblir la protection XSS des
+ * routes métier.
+ */
+const docsCsp: HelmetOptions['contentSecurityPolicy'] = {
+  directives: {
+    defaultSrc: ["'self'"],
+    scriptSrc: ["'self'", "'unsafe-inline'"],
+    styleSrc: ["'self'", "'unsafe-inline'"],
+    imgSrc: ["'self'", 'data:'],
+    connectSrc: ["'self'"],
+    fontSrc: ["'self'", 'data:'],
+    objectSrc: ["'none'"],
+    frameAncestors: ["'none'"],
+  },
+};
 
 async function bootstrap(): Promise<void> {
   const isProduction = process.env.NODE_ENV === 'production';
@@ -75,31 +111,53 @@ async function bootstrap(): Promise<void> {
     methods: ['GET', 'POST'],
   });
 
-  app.use(
-    helmet({
-      crossOriginEmbedderPolicy: false,
-      contentSecurityPolicy: {
-        directives: {
-          defaultSrc: ["'self'"],
-          scriptSrc: ["'self'"],
-          styleSrc: ["'self'"],
-          imgSrc: ["'self'"],
-          connectSrc: ["'self'"],
-          fontSrc: ["'self'"],
-          objectSrc: ["'none'"],
-          frameAncestors: ["'none'"],
-        },
-      },
-    }),
-  );
+  // Sélection de la CSP selon le chemin demandé : stricte partout, sauf sur /docs*
+  // où Swagger UI a besoin d'exécuter un script inline (voir justification ci-dessus).
+  const strictHelmet = helmet({
+    crossOriginEmbedderPolicy: false,
+    contentSecurityPolicy: strictCsp,
+  });
+  const docsHelmet = helmet({
+    crossOriginEmbedderPolicy: false,
+    contentSecurityPolicy: docsCsp,
+  });
+
+  app.use((req: Request, res: Response, next: NextFunction) => {
+    (req.path.startsWith('/docs') ? docsHelmet : strictHelmet)(req, res, next);
+  });
 
   app.use(json({ limit: '10kb' }));
   app.use(urlencoded({ extended: true, limit: '10kb' }));
+
+  // --- Documentation API (Swagger UI) ---
+  // Générée uniquement à partir des décorateurs @Api* posés sur les controllers/DTOs :
+  // elle ne peut donc jamais diverger silencieusement du code réel.
+  const swaggerConfig = new DocumentBuilder()
+    .setTitle('Noria')
+    .setDescription(
+      'Évaluez la structuration de votre entreprise et identifiez les leviers prioritaires pour son développement.',
+    )
+    .setVersion('1.0')
+    .addTag(
+      'diagnostics',
+      'Soumission et consultation des résultats de diagnostic',
+    )
+    .addTag('questions', 'Catalogue des questions du questionnaire')
+    .addTag('health', 'Vérification de disponibilité du service')
+    .build();
+
+  const swaggerDocument = SwaggerModule.createDocument(app, swaggerConfig);
+
+  // Route volontairement en dehors de /api et du versionnement : une doc n'est pas une
+  // ressource métier versionnée. SwaggerModule gère lui-même le routage, le service des
+  // assets statiques (swagger-ui-dist) et le rendu HTML.
+  SwaggerModule.setup('docs', app, swaggerDocument);
 
   const port = process.env.PORT ?? 3001;
   await app.listen(port);
 
   logger.log(`Noria backend démarré sur le port ${port} (API v1)`);
+  logger.log(`Documentation API disponible sur http://localhost:${port}/docs`);
 }
 
 bootstrap().catch((error: unknown) => {
