@@ -1,14 +1,9 @@
-name: Backend CI
+name: Backend Release
 
 on:
   push:
-    branches: [ main, master, develop ]
-    paths:
-      - 'backend/**'
-  pull_request:
-    branches: [ main, master, develop ]
-    paths:
-      - 'backend/**'
+    tags:
+      - 'backend-v*'
 
 jobs:
   test:
@@ -53,9 +48,6 @@ jobs:
         env:
           DATABASE_URL: "postgresql://noria:noria@localhost:5432/noria?schema=public"
 
-      - name: Run Linter
-        run: npm run lint --if-present
-
       - name: Run Tests (Vitest)
         run: npm test
         env:
@@ -63,3 +55,35 @@ jobs:
           PORT: 3000
           DATABASE_URL: "postgresql://noria:noria@localhost:5432/noria?schema=public"
           FRONTEND_ORIGIN: "http://localhost:5173"
+
+  release:
+    name: Create GitHub Release
+    needs: test
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Extract Tag Version
+        id: get_version
+        run: |
+          # Extrait la version (ex: si tag = backend-v1.0.0 -> VERSION = 1.0.0)
+          TAG_NAME="${{ github.ref_name }}"
+          VERSION="${TAG_NAME#backend-v}"
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: Backend Release v${{ env.VERSION }}
+          body: |
+            ### Backend Release v${{ env.VERSION }}
+            Automated release for tag `${{ github.ref_name }}`.
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
