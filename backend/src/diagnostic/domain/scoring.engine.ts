@@ -1,5 +1,5 @@
-import { Dimension, MaturityLevel } from '../enums/dimension.enum.js';
-import { QUESTIONS_CATALOG } from './questions.catalog.js';
+import { Dimension, MaturityLevel } from '../enums/dimension.enum';
+import { QUESTIONS_CATALOG } from './questions.catalog';
 
 // --- Constantes métier de scoring ---
 

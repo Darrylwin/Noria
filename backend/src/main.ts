@@ -1,35 +1,12 @@
 import { Logger, ValidationPipe, VersioningType } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import type { NestExpressApplication } from '@nestjs/platform-express';
-import type { IncomingMessage, ServerResponse } from 'node:http';
-import { createRequire } from 'node:module';
 import { json, urlencoded } from 'express';
-import type { HelmetOptions } from 'helmet';
+import helmet from 'helmet';
 import { AppModule } from './app.module.js';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter.js';
 import { LoggingInterceptor } from './common/interceptors/logging.interceptor.js';
 import { JsonLogger } from './common/logger/json.logger.js';
-
-const require = createRequire(import.meta.url);
-
-/**
- * Contournement d'un bug non résolu du resolver TypeScript NodeNext avec les
- * paquets CommonJS "export =" (microsoft/TypeScript#50466, #53349 - toujours
- * ouverts, reproduit avec helmet 6.x et 7.x, indépendant de la version d'helmet).
- * La résolution de types NodeNext associe au module une déclaration "namespace"
- * sans signature d'appel, alors que le module CommonJS réel exporte bien une
- * fonction. On récupère donc l'implémentation réelle via createRequire (fiable
- * au runtime en ESM natif) et on la type explicitement nous-mêmes.
- */
-type HelmetMiddleware = (
-  req: IncomingMessage,
-  res: ServerResponse,
-  next: (err?: unknown) => void,
-) => void;
-
-const helmet: (
-  options?: Readonly<HelmetOptions>,
-) => HelmetMiddleware = require('helmet');
 
 async function bootstrap(): Promise<void> {
   const isProduction = process.env.NODE_ENV === 'production';

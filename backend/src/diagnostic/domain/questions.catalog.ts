@@ -1,4 +1,4 @@
-import { Dimension } from '../enums/dimension.enum.js';
+import { Dimension } from '../enums/dimension.enum';
 import {
   Q10Answer,
   Q1Answer,
@@ -10,7 +10,7 @@ import {
   Q7Answer,
   Q8Answer,
   Q9Answer,
-} from '../enums/answers.enum.js';
+} from '../enums/answers.enum';
 
 /**
  * Représente une option de réponse pour une question donnée.

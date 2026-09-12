@@ -1,12 +1,12 @@
-import { Dimension } from '../enums/dimension.enum.js';
-import { ScoringResult } from './scoring.engine.js';
+import { Dimension } from '../enums/dimension.enum';
+import { ScoringResult } from './scoring.engine';
 import {
   CASCADE_CONTENT,
   DIMENSION_LEVEL_THRESHOLD_HIGH,
   DIMENSION_LEVEL_THRESHOLD_LOW,
   DIMENSION_RECOMMENDATIONS,
   MATURITY_LEVEL_CONTENT,
-} from './content.fr.js';
+} from './content.fr';
 
 /**
  * Structure du résultat de recommandation retourné à l'utilisateur.

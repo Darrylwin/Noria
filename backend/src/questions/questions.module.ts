@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { QuestionsController } from './questions.controller.js';
+import { QuestionsController } from './questions.controller';
 
 /**
  * Module d'exposition du catalogue statique de questions.
