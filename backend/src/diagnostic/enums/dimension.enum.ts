@@ -1,0 +1,5 @@
+export enum Dimension {
+  FORMALIZATION = 'FORMALIZATION',
+  ACCOUNTING = 'ACCOUNTING',
+  FUNDING = 'FUNDING',
+}
