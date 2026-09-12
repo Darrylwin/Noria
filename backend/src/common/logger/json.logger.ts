@@ -8,6 +8,46 @@ import type { LoggerService, LogLevel } from '@nestjs/common';
  * Format : { level, timestamp, context, message, stack? }
  */
 export class JsonLogger implements LoggerService {
+  /**
+   * Normalise le champ "message" en string exploitable, y compris pour les instances
+   * d'Error : leurs propriétés (message, stack, name) sont non énumérables, donc
+   * JSON.stringify(error) produit "{}" silencieusement si on ne les extrait pas
+   * explicitement. On préserve aussi error.cause (chaînage d'erreurs natif Node/ES2022),
+   * fréquent dans les erreurs Prisma/NestJS qui enveloppent une cause racine.
+   */
+  private serializeMessage(message: unknown): string {
+    if (typeof message === 'string') {
+      return message;
+    }
+
+    if (message instanceof Error) {
+      const cause =
+        message.cause instanceof Error
+          ? ` (cause: ${message.cause.name}: ${message.cause.message})`
+          : '';
+      return `${message.name}: ${message.message}${cause}`;
+    }
+
+    try {
+      return JSON.stringify(message);
+    } catch {
+      // Cas des structures circulaires ou non sérialisables : on retombe sur String()
+      // plutôt que de laisser JSON.stringify lever une exception dans le logger lui-même.
+      return String(message);
+    }
+  }
+
+  /**
+   * Extrait la stack trace d'une Error si elle n'a pas été fournie explicitement en
+   * paramètre - cas de logger.error(error) sans second argument stack.
+   */
+  private resolveStack(message: unknown, stack?: string): string | undefined {
+    if (stack) {
+      return stack;
+    }
+    return message instanceof Error ? message.stack : undefined;
+  }
+
   private write(
     level: LogLevel,
     message: unknown,
@@ -18,11 +58,12 @@ export class JsonLogger implements LoggerService {
       level,
       timestamp: new Date().toISOString(),
       context: context ?? 'Application',
-      message: typeof message === 'string' ? message : JSON.stringify(message),
+      message: this.serializeMessage(message),
     };
 
-    if (stack) {
-      entry.stack = stack;
+    const resolvedStack = this.resolveStack(message, stack);
+    if (resolvedStack) {
+      entry.stack = resolvedStack;
     }
 
     process.stdout.write(JSON.stringify(entry) + '\n');
