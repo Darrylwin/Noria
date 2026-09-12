@@ -10,7 +10,7 @@ import {
   Q7Answer,
   Q8Answer,
   Q9Answer,
-} from '../enums/answers.enum';
+} from '../enums/answers.enum.js';
 
 /**
  * Payload d'entrée pour la soumission d'un diagnostic.

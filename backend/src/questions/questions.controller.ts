@@ -2,7 +2,7 @@ import { Controller, Get } from '@nestjs/common';
 import {
   QuestionDefinition,
   QUESTIONS_CATALOG,
-} from '../diagnostic/domain/questions.catalog';
+} from '../diagnostic/domain/questions.catalog.js';
 
 /**
  * Contrôleur exposant le catalogue des questions du diagnostic NORIA.

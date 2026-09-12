@@ -1,12 +1,12 @@
 import { Injectable } from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service';
-import { Answers, ScoringResult } from './domain/scoring.engine';
+import { PrismaService } from '../prisma/prisma.service.js';
+import { Answers, ScoringResult } from './domain/scoring.engine.js';
 import {
   computeRecommendation,
   RecommendationResult,
-} from './domain/recommendation.engine';
-import { DiagnosticResponseDto } from './dto/diagnostic-response.dto';
-import { QUESTIONS_CATALOG } from './domain/questions.catalog';
+} from './domain/recommendation.engine.js';
+import { DiagnosticResponseDto } from './dto/diagnostic-response.dto.js';
+import { QUESTIONS_CATALOG } from './domain/questions.catalog.js';
 
 /**
  * Couche de persistance responsable de l'accès aux données Prisma pour les diagnostics.

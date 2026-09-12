@@ -2,13 +2,13 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
-import { PrismaModule } from './prisma/prisma.module';
-import { DiagnosticModule } from './diagnostic/diagnostic.module';
-import { QuestionsModule } from './questions/questions.module';
-import { HealthModule } from './health/health.module';
-import { HttpExceptionFilter } from './common/filters/http-exception.filter';
-import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
-import { validate } from './config/env.validation';
+import { PrismaModule } from './prisma/prisma.module.js';
+import { DiagnosticModule } from './diagnostic/diagnostic.module.js';
+import { QuestionsModule } from './questions/questions.module.js';
+import { HealthModule } from './health/health.module.js';
+import { HttpExceptionFilter } from './common/filters/http-exception.filter.js';
+import { LoggingInterceptor } from './common/interceptors/logging.interceptor.js';
+import { validate } from './config/env.validation.js';
 
 /**
  * Module racine (AppModule) orchestrant les modules applicatifs,

@@ -8,9 +8,9 @@ import {
   Param,
   Post,
 } from '@nestjs/common';
-import { DiagnosticService } from './diagnostic.service';
-import { SubmitDiagnosticDto } from './dto/submit-diagnostic.dto';
-import { DiagnosticResponseDto } from './dto/diagnostic-response.dto';
+import { DiagnosticService } from './diagnostic.service.js';
+import { SubmitDiagnosticDto } from './dto/submit-diagnostic.dto.js';
+import { DiagnosticResponseDto } from './dto/diagnostic-response.dto.js';
 
 /**
  * Expose les points d'entrée HTTP pour l'évaluation de maturité et la consultation des résultats.

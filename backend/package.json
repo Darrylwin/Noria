@@ -5,6 +5,10 @@
   "author": "LOGOSSOU Darryl-win",
   "private": true,
   "license": "UNLICENSED",
+  "type": "module",
+  "engines": {
+    "node": "22.x"
+  },
   "scripts": {
     "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",

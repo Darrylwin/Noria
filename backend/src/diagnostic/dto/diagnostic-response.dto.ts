@@ -1,4 +1,4 @@
-import { Dimension, MaturityLevel } from '../enums/dimension.enum';
+import { Dimension, MaturityLevel } from '../enums/dimension.enum.js';
 
 /**
  * Structure détaillée du sous-objet des scores par dimension.

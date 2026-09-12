@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
-import { Answers, computeScore } from './domain/scoring.engine';
-import { computeRecommendation } from './domain/recommendation.engine';
-import { DiagnosticRepository } from './diagnostic.repository';
-import { SubmitDiagnosticDto } from './dto/submit-diagnostic.dto';
-import { DiagnosticResponseDto } from './dto/diagnostic-response.dto';
+import { Answers, computeScore } from './domain/scoring.engine.js';
+import { computeRecommendation } from './domain/recommendation.engine.js';
+import { DiagnosticRepository } from './diagnostic.repository.js';
+import { SubmitDiagnosticDto } from './dto/submit-diagnostic.dto.js';
+import { DiagnosticResponseDto } from './dto/diagnostic-response.dto.js';
 
 /**
  * Service applicatif orchestrant le workflow du diagnostic NORIA.

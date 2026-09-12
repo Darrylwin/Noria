@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
-import { DiagnosticController } from './diagnostic.controller';
-import { DiagnosticService } from './diagnostic.service';
-import { DiagnosticRepository } from './diagnostic.repository';
+import { DiagnosticController } from './diagnostic.controller.js';
+import { DiagnosticService } from './diagnostic.service.js';
+import { DiagnosticRepository } from './diagnostic.repository.js';
 
 /**
  * Module d'encapsulation de la fonctionnalité de diagnostic NORIA.
