@@ -30,9 +30,20 @@ export class HealthController {
   @Get()
   @ApiOperation({
     summary: 'Vérifie la disponibilité du service et de la base de données',
+    description:
+      'Effectue un ping SQL réel (SELECT 1) sur PostgreSQL à chaque appel, pas un simple ' +
+      '"le processus tourne". Destiné à un usage d\'infrastructure (load balancer, plateforme ' +
+      "d'hébergement), pas à un affichage côté utilisateur final.",
   })
-  @ApiResponse({ status: 200, description: 'Service opérationnel.' })
-  @ApiResponse({ status: 503, description: 'Base de données inaccessible.' })
+  @ApiResponse({
+    status: 200,
+    description: 'Service et base de données opérationnels.',
+  })
+  @ApiResponse({
+    status: 503,
+    description:
+      'Le processus tourne mais la base de données est inaccessible.',
+  })
   async check(): Promise<HealthCheckResponse> {
     const memory = process.memoryUsage();
     const uptime = Math.floor(process.uptime());

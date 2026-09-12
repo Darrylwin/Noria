@@ -135,15 +135,46 @@ async function bootstrap(): Promise<void> {
   const swaggerConfig = new DocumentBuilder()
     .setTitle('Noria')
     .setDescription(
-      'Évaluez la structuration de votre entreprise et identifiez les leviers prioritaires pour son développement.',
+      `Évaluez la structuration de votre entreprise et identifiez les leviers prioritaires pour son développement.
+
+## Vue d'ensemble du parcours
+
+1. Le frontend appelle GET /questions pour obtenir les 10 questions à afficher (textes, options, ordre).
+2. L'utilisateur répond aux 10 questions. Le frontend n'envoie jamais rien au serveur avant la fin.
+3. Le frontend appelle POST /diagnostics avec les 10 codes de réponse choisis.
+4. Le serveur calcule le score et renvoie le résultat complet en une seule réponse (voir DiagnosticResponseDto) - aucun second appel n'est nécessaire pour afficher l'écran de résultat.
+5. GET /diagnostics/:id permet de recharger ce même résultat plus tard (ex. rafraîchissement de page), avec exactement la même structure de réponse.
+
+## Règle métier essentielle à connaître
+
+Le score de Formalisation détermine un plafond appliqué aux scores de Comptabilité et de Financement (formule : 50 + 0.5 × score de Formalisation). Si l'entreprise est mal formalisée, ses scores de Comptabilité et de Financement peuvent être plafonnés même s'ils sont naturellement élevés. Quand ce plafonnement change effectivement le résultat, cascadeTriggered vaut true dans la réponse, et le texte de recommandation change en conséquence pour prioriser la Formalisation. Le frontend n'a jamais à recalculer ou à vérifier cette logique : il affiche simplement ce que l'API renvoie. Voir les descriptions des champs scores.*.raw / scores.*.final et cascadeTriggered dans DiagnosticResponseDto pour le détail.
+
+## Format d'erreur
+
+Toute réponse en échec, quel que soit l'endpoint, suit le même format (voir HttpErrorDto) :
+{ "statusCode": number, "message": string | string[], "error": string }
+Aucune stack trace ni détail technique (SQL, Prisma) n'est jamais renvoyé au client.
+
+## Limites à connaître
+
+- POST /diagnostics : 10 requêtes par minute par adresse IP (429 au-delà), payload max 10 Ko (413 au-delà).
+- Aucune authentification sur aucun endpoint : le diagnostic est entièrement public et anonyme.
+- CORS : une seule origine autorisée (configurée côté serveur), toute autre origine est bloquée par le navigateur.
+- Toutes les routes métier sont préfixées /api/v1 (ex. /api/v1/diagnostics) - cette documentation n'affiche que le chemin relatif à ce préfixe.`,
     )
     .setVersion('1.0')
     .addTag(
       'diagnostics',
-      'Soumission et consultation des résultats de diagnostic',
+      'Soumission des réponses et consultation des résultats de diagnostic - le cœur du parcours utilisateur',
     )
-    .addTag('questions', 'Catalogue des questions du questionnaire')
-    .addTag('health', 'Vérification de disponibilité du service')
+    .addTag(
+      'questions',
+      'Catalogue des 10 questions à afficher, source de vérité unique des textes et options',
+    )
+    .addTag(
+      'health',
+      "Vérification de disponibilité du service, à usage d'infrastructure uniquement",
+    )
     .build();
 
   const swaggerDocument = SwaggerModule.createDocument(app, swaggerConfig);
