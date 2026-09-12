@@ -23,8 +23,59 @@ endpoints existants ou l'ajout de nouveaux endpoints.
 
 ### Versionnement
 
-L'API n'est pas versionnée dans l'URL pour ce prototype (`/v1/diagnostics` n'existe pas). Si un versionnement devient
-nécessaire lors d'un passage en production réelle avec plusieurs clients, il sera introduit comme préfixe de route.
+Toutes les routes métier sont préfixées `/api/v1` (préfixe global `api` + versionnement par URI, version par défaut
+`1`), configuré une seule fois dans `main.ts`. Un nouveau contrôleur n'a rien à faire de spécial pour en bénéficier :
+le préfixe et la version s'appliquent automatiquement à toute route déclarée via un contrôleur NestJS.
+
+Deux exceptions volontaires, qui ne passent jamais par `/api/v1` :
+
+- `/docs` et `/docs-json` (documentation Swagger UI) : une documentation n'est pas une ressource métier versionnée,
+  elle est enregistrée directement sur l'adaptateur HTTP via `SwaggerModule.setup`, en dehors du préfixe global.
+- Aucune autre route n'existe en dehors de `/api/v1` actuellement.
+
+Si une évolution future de la formule de scoring nécessitait de faire coexister deux comportements incompatibles
+(plutôt qu'un simple changement de valeur, déjà couvert par `scoringEngineVersion`, voir `BUSINESS_RULES.md`), le
+préfixe `/api/v2` serait introduit à ce moment-là, avec les deux versions actives en parallèle le temps de la
+migration des clients.
+
+---
+
+## Documentation interactive
+
+La documentation OpenAPI de l'API est générée automatiquement à partir des décorateurs `@Api*` posés sur les
+contrôleurs et les DTOs (`@nestjs/swagger`) - elle ne peut donc jamais diverger silencieusement du code réellement
+déployé.
+
+| Route            | Contenu                                                                                                                |
+|------------------|------------------------------------------------------------------------------------------------------------------------|
+| `GET /docs`      | Interface Swagger UI, navigable et testable directement depuis le navigateur                                           |
+| `GET /docs-json` | Contrat OpenAPI brut au format JSON, consommé par `/docs` ou tout autre outil (génération de client, tests de contrat) |
+
+Ces deux routes sont accessibles sans authentification, cohérent avec le fait que l'API elle-même n'en a pas (voir
+`SECURITY.md`). Elles sont servies avec une politique de sécurité (CSP) plus permissive que le reste de l'API, car
+Swagger UI a besoin d'exécuter un script inline pour s'initialiser - cette politique élargie ne s'applique jamais aux
+routes `/api/v1/*`.
+
+Tout nouveau champ de DTO ou nouvel endpoint doit être documenté avec `@ApiProperty` / `@ApiOperation` /
+`@ApiResponse` au moment où il est écrit, pas après coup : la description doit expliquer l'intention métier du champ
+(pourquoi il existe, ce qu'il implique), pas seulement son type. Voir `DiagnosticResponseDto` pour un exemple du
+niveau de détail attendu.
+
+Pour documenter une réponse d'erreur avec un exemple précis tout en réutilisant le schéma structurel commun
+(`HttpErrorDto`), ne jamais combiner `type` et `schema` sur le même `@ApiResponse` (le second écrase le premier).
+Utiliser à la place :
+
+```typescript
+@ApiExtraModels(HttpErrorDto) // sur la classe du contrôleur
+// ...
+@ApiResponse({
+  status: 404,
+  schema: {
+    allOf: [{ $ref: getSchemaPath(HttpErrorDto) }],
+    example: { statusCode: 404, message: 'Diagnostic introuvable.', error: 'Not Found' },
+  },
+})
+```
 
 ---
 
@@ -36,8 +87,10 @@ nécessaire lors d'un passage en production réelle avec plusieurs clients, il s
 | `201 Created`               | Création réussie (`POST /diagnostics`)                                  |
 | `400 Bad Request`           | Payload invalide (champ manquant, valeur hors enum, propriété inconnue) |
 | `404 Not Found`             | Ressource inexistante (`GET /diagnostics/:id` avec un id inconnu)       |
+| `413 Payload Too Large`     | Payload dépassant la limite configurée (10 Ko sur `POST /diagnostics`)  |
 | `429 Too Many Requests`     | Rate limit atteint                                                      |
 | `500 Internal Server Error` | Erreur inattendue côté serveur                                          |
+| `503 Service Unavailable`   | `GET /health` uniquement, base de données inaccessible                  |
 
 Aucun autre code n'est utilisé dans le périmètre actuel.
 
@@ -45,7 +98,8 @@ Aucun autre code n'est utilisé dans le périmètre actuel.
 
 ## Format d'erreur uniforme
 
-Toutes les erreurs, quelle que soit leur origine, suivent le même format :
+Toutes les erreurs, quelle que soit leur origine, suivent le même format (voir `HttpErrorDto`, réutilisé dans la
+documentation Swagger pour chaque réponse d'erreur) :
 
 ```json
 {
@@ -89,19 +143,30 @@ réponses d'erreur.
 
 ## Endpoints
 
+Toutes les routes ci-dessous, sauf `/docs` et `/docs-json`, sont préfixées `/api/v1` (voir section Versionnement).
+
 ### `GET /health`
 
-Vérification de disponibilité du processus applicatif.
+Vérification de disponibilité du processus applicatif et de la base de données.
 
-- Ne dépend pas de la base de données.
+- Effectue un ping SQL réel (`SELECT 1`) sur PostgreSQL à chaque appel.
 - Toujours rapide, utilisé par la plateforme d'hébergement comme sonde de disponibilité.
 - Non soumis au rate limiting.
+- Usage d'infrastructure uniquement, jamais consommé par le frontend applicatif.
 
 ```
-GET /health
+GET /api/v1/health
 
 200 OK
-{ "status": "ok" }
+{
+  "status": "ok",
+  "timestamp": "2026-09-12T10:00:00.000Z",
+  "uptime": 3600,
+  "services": { "database": "up" },
+  "system": { "memoryHeapUsed": "45 MB", "memoryHeapTotal": "128 MB" }
+}
+
+503 Service Unavailable  - base de données inaccessible, même structure avec "status": "error"
 ```
 
 ---
@@ -114,9 +179,11 @@ Catalogue complet des 10 questions avec leurs options et valeurs de score.
 - Le frontend consomme cet endpoint pour afficher le questionnaire sans dupliquer les textes.
 - La réponse est identique à chaque appel (données statiques issues du catalogue).
 - Non soumis au rate limiting.
+- Le tableau retourné n'est pas garanti trié : le frontend doit trier sur le champ `order` de chaque question, pas sur
+  l'ordre de retour du tableau.
 
 ```
-GET /questions
+GET /api/v1/questions
 
 200 OK
 [
@@ -141,12 +208,15 @@ GET /questions
 
 Soumet un diagnostic complet. Calcule le score, persiste la soumission et retourne le résultat interprété.
 
-- Non idempotent : chaque appel crée une nouvelle soumission avec un nouvel identifiant.
+- Non idempotent : chaque appel crée une nouvelle soumission avec un nouvel identifiant, même avec un payload
+  identique à un appel précédent.
+- Calcul entièrement synchrone et déterministe : les mêmes 10 réponses produisent toujours exactement le même
+  résultat.
 - Soumis au rate limiting : 10 requêtes par minute par adresse IP.
 - Payload limité à 10 Ko.
 
 ```
-POST /diagnostics
+POST /api/v1/diagnostics
 Content-Type: application/json
 ```
 
@@ -166,6 +236,9 @@ Content-Type: application/json
   "q10": "IDENTIFIED_NOT_DOCUMENTED"
 }
 ```
+
+Chaque valeur doit correspondre exactement à un `options[].code` retourné par `GET /questions` pour la question
+correspondante - jamais le `label` affiché.
 
 **Réponse `201 Created`**
 
@@ -213,12 +286,13 @@ Content-Type: application/json
 Recharge le résultat d'une soumission existante par son identifiant.
 
 - Endpoint de lecture seule, ne modifie jamais l'état.
-- Retourne le même format que `POST /diagnostics`.
+- Retourne exactement le même format de réponse que `POST /diagnostics` - le frontend peut réutiliser le même
+  composant d'affichage pour les deux cas.
 - Utilisé par la page de résultat pour survivre à un rafraîchissement de page.
 - Non soumis au rate limiting.
 
 ```
-GET /diagnostics/b3e1e6d2-4b2a-4c39-9a2f-1234567890ab
+GET /api/v1/diagnostics/b3e1e6d2-4b2a-4c39-9a2f-1234567890ab
 
 200 OK  - même format que la réponse de POST /diagnostics
 404 Not Found - identifiant inconnu
@@ -228,23 +302,23 @@ GET /diagnostics/b3e1e6d2-4b2a-4c39-9a2f-1234567890ab
 
 ## Champs de la réponse diagnostic
 
-| Champ                      | Type            | Description                                           |
-|----------------------------|-----------------|-------------------------------------------------------|
-| `id`                       | `string` (UUID) | Identifiant unique de la soumission                   |
-| `globalScore`              | `number`        | Score global arrondi à une décimale (0–100)           |
-| `maturityLevel`            | `enum`          | `NEEDS_STRENGTHENING`, `IN_PROGRESS` ou `ADVANCED`    |
-| `maturityLabel`            | `string`        | Libellé français du niveau                            |
-| `maturityDescription`      | `string`        | Description française du niveau                       |
-| `scores.formalization`     | `number`        | Score final de Formalisation, arrondi à l'entier      |
-| `scores.accounting.raw`    | `number`        | Score brut de Comptabilité, avant plafonnement        |
-| `scores.accounting.final`  | `number`        | Score final de Comptabilité, après plafonnement       |
-| `scores.funding.raw`       | `number`        | Score brut de Financement, avant plafonnement         |
-| `scores.funding.final`     | `number`        | Score final de Financement, après plafonnement        |
-| `strongestDimension`       | `enum`          | Dimension avec le score final le plus élevé           |
-| `improvementFocus`         | `enum`          | Dimension prioritaire pour les efforts d'amélioration |
-| `cascadeTriggered`         | `boolean`       | Indique si la cascade a été détectée                  |
-| `mainRecommendation`       | `string`        | Recommandation principale en français                 |
-| `secondaryRecommendations` | `string[]`      | Recommandations secondaires (0 à 2 éléments)          |
+| Champ                      | Type            | Description                                                                                            |
+|----------------------------|-----------------|--------------------------------------------------------------------------------------------------------|
+| `id`                       | `string` (UUID) | Identifiant unique de la soumission                                                                    |
+| `globalScore`              | `number`        | Score global arrondi à une décimale (0–100)                                                            |
+| `maturityLevel`            | `enum`          | `NEEDS_STRENGTHENING`, `IN_PROGRESS` ou `ADVANCED` - sert à la logique, pas à l'affichage direct       |
+| `maturityLabel`            | `string`        | Libellé français du niveau, prêt à afficher                                                            |
+| `maturityDescription`      | `string`        | Description française du niveau, prête à afficher                                                      |
+| `scores.formalization`     | `number`        | Score final de Formalisation, arrondi à l'entier - jamais plafonné                                     |
+| `scores.accounting.raw`    | `number`        | Score brut de Comptabilité, avant plafonnement - jamais affiché comme résultat principal               |
+| `scores.accounting.final`  | `number`        | Score final de Comptabilité, après plafonnement - toujours celui à afficher                            |
+| `scores.funding.raw`       | `number`        | Score brut de Financement, avant plafonnement - jamais affiché comme résultat principal                |
+| `scores.funding.final`     | `number`        | Score final de Financement, après plafonnement - toujours celui à afficher                             |
+| `strongestDimension`       | `enum`          | Dimension avec le score final le plus élevé                                                            |
+| `improvementFocus`         | `enum`          | Dimension prioritaire pour les efforts d'amélioration - forcée à `FORMALIZATION` si `cascadeTriggered` |
+| `cascadeTriggered`         | `boolean`       | Indique si le plafonnement a effectivement réduit un score - ne jamais nommer explicitement dans l'UI  |
+| `mainRecommendation`       | `string`        | Recommandation principale en français, prête à afficher                                                |
+| `secondaryRecommendations` | `string[]`      | Recommandations secondaires (0 à 2 éléments ; non vide uniquement si `cascadeTriggered`)               |
 
 ---
 
@@ -273,3 +347,9 @@ déjà.
 Le frontend n'embarque aucun texte métier (recommandations, libellés de niveau). Tout est renvoyé par l'API. Cela
 garantit qu'une modification de texte ne nécessite pas de redéploiement frontend, et qu'il n'existe jamais de divergence
 entre ce qui est calculé et ce qui est affiché.
+
+### Pourquoi /docs et /docs-json existent en dehors de /api/v1
+
+Une documentation n'est pas une ressource métier : elle ne représente aucune entité du domaine et n'a donc pas de
+raison d'être versionnée comme telle. La conséquence directe est que `/docs` reste stable même si un futur `/api/v2`
+est introduit - la doc décrirait alors les deux versions dans le même document, sans elle-même se dupliquer.
