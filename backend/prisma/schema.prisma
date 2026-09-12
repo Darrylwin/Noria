@@ -1,0 +1,57 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model DiagnosticSubmission {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now()) @map("created_at")
+
+  scoringEngineVersion String @default("v1") @map("scoring_engine_version")
+
+  formalizationScore   Float @map("formalization_score")
+  accountingRawScore   Float @map("accounting_raw_score")
+  accountingFinalScore Float @map("accounting_final_score")
+  fundingRawScore      Float @map("funding_raw_score")
+  fundingFinalScore    Float @map("funding_final_score")
+  globalScore          Float @map("global_score")
+
+  maturityLevel      MaturityLevel @map("maturity_level")
+  strongestDimension Dimension     @map("strongest_dimension")
+  improvementFocus   Dimension     @map("improvement_focus")
+  cascadeTriggered   Boolean       @default(false) @map("cascade_triggered")
+
+  answers DiagnosticAnswer[]
+
+  @@map("diagnostic_submissions")
+}
+
+model DiagnosticAnswer {
+  id           String               @id @default(uuid())
+  submissionId String               @map("submission_id")
+  submission   DiagnosticSubmission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+
+  questionCode String @map("question_code")
+  answerCode   String @map("answer_code")
+  scoreValue   Int    @map("score_value")
+
+  @@unique([submissionId, questionCode])
+  @@index([submissionId])
+  @@map("diagnostic_answers")
+}
+
+enum MaturityLevel {
+  NEEDS_STRENGTHENING
+  IN_PROGRESS
+  ADVANCED
+}
+
+enum Dimension {
+  FORMALIZATION
+  ACCOUNTING
+  FUNDING
+}
