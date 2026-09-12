@@ -1,114 +1,267 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# Noria - Backend
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+API REST du diagnostic ALODO MPME, Combinaison : Formalisation, Comptabilité, Préparation au financement.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+Construit avec NestJS, Prisma et PostgreSQL. Moteur de scoring entièrement déterministe, sans dépendance à un service
+externe.
 
-## Description
+---
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+## Stack
 
-## Project setup
+- **Runtime** : Node.js
+- **Framework** : NestJS 12
+- **Base de données** : PostgreSQL 16
+- **ORM** : Prisma 6
+- **Tests** : Vitest
+- **Lint** : oxlint
+- **Format** : Prettier
 
-```bash
-$ npm install
-```
+---
 
-## Compile and run the project
+## Prérequis
+
+- Node.js >= 22
+- Docker (pour PostgreSQL en développement local)
+
+---
+
+## Installation
 
 ```bash
-# development
-$ npm run start
+# Cloner le dépôt et se placer dans le dossier backend
+cd backend
 
-# watch mode
-$ npm run start:dev
+# Installer les dépendances
+npm install
 
-# production mode
-$ npm run start:prod
+# Copier les variables d'environnement
+cp .env.example .env
 ```
 
-## Run tests
+---
+
+## Variables d'environnement
+
+| Variable          | Obligatoire | Description                          |
+|-------------------|-------------|--------------------------------------|
+| `DATABASE_URL`    | Oui         | URL de connexion PostgreSQL          |
+| `FRONTEND_ORIGIN` | Oui         | Origine autorisée pour le CORS       |
+| `PORT`            | Non         | Port d'écoute (défaut : 3001)        |
+| `NODE_ENV`        | Non         | Environnement (défaut : development) |
+
+---
+
+## Démarrage en développement
 
 ```bash
-# unit tests
-$ npm run test
+# Démarrer PostgreSQL
+docker compose up -d
 
-# e2e tests
-$ npm run test:e2e
+# Appliquer les migrations et générer le client Prisma
+npx prisma migrate dev
+npx prisma generate
 
-# test coverage
-$ npm run test:cov
+# Démarrer le serveur en mode watch
+npm run start:dev
 ```
 
-## Deployment
+Le serveur écoute sur `http://localhost:3001`.
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+---
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+## Tests
 
 ```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
+npm test
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+Lance l'ensemble des tests unitaires et e2e en une seule commande. Les tests e2e démarrent une instance NestJS en
+mémoire et requièrent que PostgreSQL soit accessible via `DATABASE_URL`.
 
-## Observability
+Structure :
 
-In production applications, observability is essential for understanding how your system behaves, detecting issues early, and maintaining reliable performance.
+```
+test/
+├── unit/
+│   ├── scoring.engine.spec.ts       # moteur de scoring (fonctions pures)
+│   ├── recommendation.engine.spec.ts # moteur de recommandations (fonctions pures)
+│   └── questions.catalog.spec.ts    # cohérence catalogue / enums
+└── e2e/
+    └── app.e2e-spec.ts              # API complète via HTTP
+```
 
-[NestJS Observe](https://observe.nestjs.com) automatically instruments your NestJS application, giving you deep visibility into your system with minimal setup:
+---
 
-- **Distributed tracing:** Follow requests across services and understand how they flow through your system.
-- **Waterfall analysis:** Visualize request execution and identify slow operations, bottlenecks, and unexpected delays.
-- **Performance analysis:** Analyze application performance in real time and quickly pinpoint areas that need optimization.
-- **Metrics:** Track key application and infrastructure metrics to understand system health and performance trends.
-- **Logging:** Centralize and correlate logs with traces and other telemetry to make debugging easier.
-- **Error tracking:** Detect errors quickly and investigate their root causes with the surrounding context.
-- **SLA monitoring:** Track service-level objectives and identify when your application is approaching or exceeding defined thresholds.
-- **Alarms and alerts:** Set up alerts for critical errors, performance degradation, SLA violations, and other anomalies so your team can react quickly.
+## API
 
-## Resources
+### `GET /health`
 
-Check out a few resources that may come in handy when working with NestJS:
+Effectue une requête réelle sur PostgreSQL (SELECT 1 via Prisma) et vérifie l'état du processus Node.js. À utiliser
+comme readiness probe plutôt que comme liveness probe pure, puisqu'un incident DB transitoire renverra une erreur même
+si le processus Node est parfaitement sain.
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Auto-instrument your application with [NestJS Observer](https://observer.nestjs.com). Distributed tracing, metrics, and logging made easy. Error tracking and performance monitoring for your NestJS applications.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+```
+200 OK
+{
+  "status": "ok",
+  "timestamp": "2026-09-12T14:32:10.481Z",
+  "uptime": 3421,
+  "services": {
+    "database": "up"
+  },
+  "system": {
+    "memoryHeapUsed": "48 MB",
+    "memoryHeapTotal": "72 MB"
+  }
+}
+```
 
-## Support
+```
+503 Service Unavailable
+{
+  "status": "error",
+  "timestamp": "2026-09-12T14:32:10.481Z",
+  "uptime": 3421,
+  "services": {
+    "database": "down"
+  },
+  "system": {
+    "memoryHeapUsed": "48 MB",
+    "memoryHeapTotal": "72 MB"
+  },
+  "error": "Database ping failed"
+}
+```
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+### `GET /questions`
 
-## Stay in touch
+Catalogue complet des 10 questions avec leurs options et valeurs de score. Consommé par le frontend pour afficher le
+questionnaire sans dupliquer les textes.
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+### `POST /diagnostics`
 
-## License
+Soumet un diagnostic complet. Attend les 10 réponses, calcule le score, persiste la soumission et retourne le résultat
+interprété.
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+```json
+// Requête
+{
+  "q1": "REGISTERED",
+  "q2": "YES",
+  "q3": "MOSTLY_UP_TO_DATE",
+  "q4": "PARTIALLY_ORGANIZED",
+  "q5": "SIMPLE_SOFTWARE",
+  "q6": "SYSTEMATICALLY",
+  "q7": "UNDER_ONE_YEAR_OLD",
+  "q8": "INFORMAL",
+  "q9": "APPROXIMATE",
+  "q10": "IDENTIFIED_NOT_DOCUMENTED"
+}
+
+// Réponse 201
+{
+  "id": "b3e1e6d2-4b2a-4c39-9a2f-1234567890ab",
+  "globalScore": 68.4,
+  "maturityLevel": "IN_PROGRESS",
+  "maturityLabel": "Structuration en cours",
+  "maturityDescription": "...",
+  "scores": {
+    "formalization": 62,
+    "accounting": {
+      "raw": 89,
+      "final": 81
+    },
+    "funding": {
+      "raw": 50,
+      "final": 50
+    }
+  },
+  "strongestDimension": "ACCOUNTING",
+  "improvementFocus": "FUNDING",
+  "cascadeTriggered": false,
+  "mainRecommendation": "...",
+  "secondaryRecommendations": []
+}
+```
+
+### `GET /diagnostics/:id`
+
+Recharge le résultat d'une soumission existante. Utilisé par la page de résultat pour survivre à un rafraîchissement de
+page.
+
+```
+404 Not Found  - identifiant inconnu
+```
+
+---
+
+## Architecture
+
+```
+src/
+├── diagnostic/
+│   ├── domain/          # fonctions pures, aucune dépendance framework
+│   │   ├── scoring.engine.ts
+│   │   ├── recommendation.engine.ts
+│   │   ├── questions.catalog.ts
+│   │   └── content.fr.ts
+│   ├── dto/             # validation des entrées et forme des réponses
+│   ├── enums/           # codes techniques des questions et réponses
+│   ├── diagnostic.controller.ts
+│   ├── diagnostic.service.ts
+│   └── diagnostic.repository.ts
+├── questions/           # endpoint lecture seule du catalogue
+├── health/              # endpoint de disponibilité
+├── common/
+│   ├── filters/         # format d'erreur uniforme
+│   └── interceptors/    # logging des requêtes
+├── config/              # validation des variables d'environnement au démarrage
+├── prisma/              # service Prisma partagé
+└── main.ts
+```
+
+Règle centrale : la couche `domain/` ne dépend d'aucun framework. Elle peut être testée en appelant directement des
+fonctions pures sans démarrer NestJS ni Prisma.
+
+---
+
+## Moteur de scoring
+
+Le calcul suit un pipeline déterministe en 10 étapes :
+
+1. Conversion des codes de réponse en valeurs numériques (0, 33, 50, 66 ou 100)
+2. Moyenne par dimension (Formalisation sur Q1–Q4, Comptabilité sur Q5–Q7, Financement sur Q8–Q10)
+3. Calcul du plafond : `50 + 0.5 × score_formalisation`
+4. Application du plafond sur Comptabilité et Financement
+5. Score global pondéré : `0.4 × F + 0.3 × C + 0.3 × Fi`
+6. Niveau de maturité : < 45 → NEEDS_STRENGTHENING, < 75 → IN_PROGRESS, ≥ 75 → ADVANCED
+7. Détection de la cascade : Formalisation < 50 ET au moins une dimension plafonnée
+8. Dimension la plus forte (sur scores finaux, tie-break : F > C > Fi)
+9. Axe d'amélioration (cascade force FORMALIZATION, sinon tie-break : C > Fi > F)
+10. Arrondi unique en fin de pipeline (dimensions à l'entier, score global à une décimale)
+
+---
+
+## Déploiement
+
+```bash
+# Appliquer les migrations en production (jamais migrate dev)
+npx prisma migrate deploy
+
+# Build
+npm run build
+
+# Démarrer
+npm run start:prod
+```
+
+Variables `DATABASE_URL` et `FRONTEND_ORIGIN` obligatoires, l'application refuse de démarrer si elles sont absentes.
+
+---
+
+## Limites connues
+
+- Pas de persistance intermédiaire pendant le questionnaire, seule la soumission finale est enregistrée.
+- Pas de suppression automatique des soumissions.
+- Pas d'authentification, tout diagnostic est anonyme.

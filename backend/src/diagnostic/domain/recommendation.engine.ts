@@ -52,16 +52,15 @@ function getDimensionFinalScore(
  * 1. Si la cascade est déclenchée (cascadeTriggered === true), le moteur priorise immédiatement
  *    les messages d'alerte sur la formalisation légale et administrative (CASCADE_CONTENT),
  *    car la non-formalisation bloque la valeur réelle des autres dimensions.
- * 2. Hors cascade, le moteur évalue le score final de l'axe d'amélioration (improvementFocus)
- *    pour sélectionner la recommandation la plus pertinente (faible, moyen ou élevé), et
- *    l'accompagne de la recommandation générale associée au niveau de maturité global
- *    (section 13.3), qui sert de repère de priorisation en complément de l'axe ciblé.
+ * 2. Hors cascade, le moteur sélectionne uniquement la recommandation associée à l'axe
+ *    d'amélioration (improvementFocus) et à son niveau de score final. Aucune recommandation
+ *    secondaire n'est définie en dehors du cas de cascade dans ce prototype : le tableau
+ *    `secondaryRecommendations` reste vide dans le cas standard.
  */
 export function computeRecommendation(
   scoring: ScoringResult,
 ): RecommendationResult {
-  const { label, description, generalRecommendation } =
-    MATURITY_LEVEL_CONTENT[scoring.maturityLevel];
+  const { label, description } = MATURITY_LEVEL_CONTENT[scoring.maturityLevel];
 
   // Cas 1 : Cascade déclenchée -> Recommandation prioritaire de formalisation
   if (scoring.cascadeTriggered) {
@@ -83,6 +82,6 @@ export function computeRecommendation(
     maturityLabel: label,
     maturityDescription: description,
     mainRecommendation,
-    secondaryRecommendations: [generalRecommendation],
+    secondaryRecommendations: [],
   };
 }

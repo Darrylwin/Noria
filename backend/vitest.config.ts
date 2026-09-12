@@ -11,5 +11,21 @@ export default defineConfig({
     pool: 'forks',
     hookTimeout: 30000,
     testTimeout: 15000,
+    coverage: {
+      provider: 'v8',
+      include: ['src/**/*.ts'],
+      exclude: [
+        'src/main.ts',
+        'src/**/*.module.ts',
+        'src/**/*.dto.ts',
+        'src/**/*.enum.ts',
+      ],
+      thresholds: {
+        lines: 80,
+        functions: 80,
+        branches: 75,
+        statements: 80,
+      },
+    },
   },
 });

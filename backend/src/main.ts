@@ -2,16 +2,24 @@ import { Logger, ValidationPipe, VersioningType } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import type { NestExpressApplication } from '@nestjs/platform-express';
 import { json, urlencoded } from 'express';
+import helmet from 'helmet';
 import { AppModule } from './app.module.js';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter.js';
 import { LoggingInterceptor } from './common/interceptors/logging.interceptor.js';
+import { JsonLogger } from './common/logger/json.logger.js';
 
 async function bootstrap(): Promise<void> {
-  // BodyParser désactivé au niveau de Nest pour appliquer une limite
-  // de taille stricte sur le corps des requêtes JSON via Express body-parser.
+  const isProduction = process.env.NODE_ENV === 'production';
+
   const app = await NestFactory.create<NestExpressApplication>(AppModule, {
     bodyParser: false,
+    // En développement : logger NestJS standard (coloré, lisible dans le terminal).
+    // En production : JsonLogger (une ligne JSON par événement, parseable par les outils
+    // de collecte). Le switch se fait uniquement via NODE_ENV, sans configuration
+    // supplémentaire.
+    logger: isProduction ? new JsonLogger() : new Logger(),
   });
+
   const logger = new Logger('Bootstrap');
 
   // 1. Définition du préfixe global /api
@@ -45,7 +53,24 @@ async function bootstrap(): Promise<void> {
     methods: ['GET', 'POST'],
   });
 
-  // Limite globale de la taille du payload (10 Ko max)
+  app.use(
+    helmet({
+      crossOriginEmbedderPolicy: false,
+      contentSecurityPolicy: {
+        directives: {
+          defaultSrc: ["'self'"],
+          scriptSrc: ["'self'"],
+          styleSrc: ["'self'"],
+          imgSrc: ["'self'"],
+          connectSrc: ["'self'"],
+          fontSrc: ["'self'"],
+          objectSrc: ["'none'"],
+          frameAncestors: ["'none'"],
+        },
+      },
+    }),
+  );
+
   app.use(json({ limit: '10kb' }));
   app.use(urlencoded({ extended: true, limit: '10kb' }));
 

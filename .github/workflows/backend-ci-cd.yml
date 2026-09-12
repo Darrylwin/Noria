@@ -53,11 +53,14 @@ jobs:
         env:
           DATABASE_URL: "postgresql://noria:noria@localhost:5432/noria?schema=public"
 
+      - name: Typecheck
+        run: npm run typecheck
+
       - name: Run Linter
         run: npm run lint --if-present
 
-      - name: Run Tests (Vitest)
-        run: npm test
+      - name: Run Tests with Coverage
+        run: npm run test:cov
         env:
           NODE_ENV: test
           PORT: 3000

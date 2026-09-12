@@ -47,7 +47,7 @@ describe('RecommendationEngine (computeRecommendation)', () => {
       expect(typeof result.maturityDescription).toBe('string');
       expect(result.mainRecommendation).toBeDefined();
       expect(Array.isArray(result.secondaryRecommendations)).toBe(true);
-      expect(result.secondaryRecommendations.length).toBeGreaterThan(0);
+      expect(result.secondaryRecommendations.length).toBe(0);
     });
 
     it('devrait retourner les textes appropriés pour le niveau IN_PROGRESS', () => {
@@ -93,7 +93,7 @@ describe('RecommendationEngine (computeRecommendation)', () => {
       const result = computeRecommendation(scoring);
 
       expect(result.mainRecommendation).toBeDefined();
-      expect(result.secondaryRecommendations.length).toBeGreaterThan(0);
+      expect(result.secondaryRecommendations.length).toBe(0);
     });
 
     it('devrait adapter les recommandations lorsque la priorité est ACCOUNTING', () => {
@@ -109,7 +109,7 @@ describe('RecommendationEngine (computeRecommendation)', () => {
       const result = computeRecommendation(scoring);
 
       expect(result.mainRecommendation).toBeDefined();
-      expect(result.secondaryRecommendations.length).toBeGreaterThan(0);
+      expect(result.secondaryRecommendations.length).toBe(0);
     });
 
     it('devrait adapter les recommandations lorsque la priorité est FUNDING', () => {
@@ -125,7 +125,7 @@ describe('RecommendationEngine (computeRecommendation)', () => {
       const result = computeRecommendation(scoring);
 
       expect(result.mainRecommendation).toBeDefined();
-      expect(result.secondaryRecommendations.length).toBeGreaterThan(0);
+      expect(result.secondaryRecommendations.length).toBe(0);
     });
   });
 
