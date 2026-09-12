@@ -5,6 +5,7 @@ on:
     branches: [ main, master, develop ]
     paths:
       - 'backend/**'
+  push:
     tags:
       - 'backend-v*'
   pull_request:
