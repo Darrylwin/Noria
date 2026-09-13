@@ -6,6 +6,9 @@
 > Évaluez en quelques minutes le niveau de structuration d'une MPME et obtenez des recommandations concrètes et
 > priorisées.
 
+[![Frontend](https://img.shields.io/badge/app-live-brightgreen)](https://noria-teal.vercel.app)
+[![API Docs](https://img.shields.io/badge/api-swagger-blue)](https://noria-qps1.onrender.com/docs)
+
 <div align="center">
   <img src="assets/noria.png" alt="Aperçu de NORIA" width="800" />
 </div>
