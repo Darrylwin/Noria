@@ -38,7 +38,7 @@ interface UseDiagnosticWizardResult {
 /**
  * Orchestre l'état complet du parcours questionnaire : chargement du catalogue,
  * navigation entre les 10 questions, sauvegarde automatique dans le cache
- * navigateur (section 15.2 de la spec) et soumission finale. Aucune règle
+ * navigateur et soumission finale. Aucune règle
  * métier de scoring n'est évaluée ici, uniquement navigation et persistance locale.
  */
 export function useDiagnosticWizard(mode: WizardMode): UseDiagnosticWizardResult {
