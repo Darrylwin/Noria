@@ -6,6 +6,9 @@ WORKDIR /usr/src/app
 COPY package*.json ./
 RUN npm ci --legacy-peer-deps
 
+COPY prisma ./prisma
+RUN npx prisma generate          # ← génère le client
+
 COPY . .
 RUN npm run build
 
@@ -18,6 +21,9 @@ ENV NODE_ENV=production
 
 COPY package*.json ./
 RUN npm ci --only=production --legacy-peer-deps
+
+COPY prisma ./prisma
+RUN npx prisma generate
 
 COPY --from=builder /usr/src/app/dist ./dist
 
