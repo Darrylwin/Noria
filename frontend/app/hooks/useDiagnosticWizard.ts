@@ -9,8 +9,7 @@ import {
     QuestionDefinition,
     SubmissionStatus,
 } from "@/app/lib/types/diagnostic";
-import {fetchQuestionsCatalog, submitDiagnostic} from "@/app/lib/api/diagnosticApi";
-import {ApiError} from "next/dist/server/api-utils";
+import {ApiError, fetchQuestionsCatalog, submitDiagnostic} from "@/app/lib/api/diagnosticApi";
 
 const QUESTION_CODES: QuestionCode[] = [
     "Q1", "Q2", "Q3", "Q4", "Q5", "Q6", "Q7", "Q8", "Q9", "Q10",
