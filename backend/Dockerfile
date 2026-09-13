@@ -7,7 +7,7 @@ COPY package*.json ./
 RUN npm ci --legacy-peer-deps
 
 COPY prisma ./prisma
-RUN npx prisma generate          # ← génère le client
+RUN npx prisma generate
 
 COPY . .
 RUN npm run build
