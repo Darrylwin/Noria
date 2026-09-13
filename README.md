@@ -6,8 +6,9 @@
 > Évaluez en quelques minutes le niveau de structuration d'une MPME et obtenez des recommandations concrètes et
 > priorisées.
 
-[![Backend CI](https://img.shields.io/badge/backend-CI-informational)](.github/workflows/backend-ci-cd.yml)
-[![Frontend CI](https://img.shields.io/badge/frontend-CI-informational)](.github/workflows/frontend-ci-cd.yml)
+<div align="center">
+  <img src="assets/noria.png" alt="Aperçu de NORIA" width="800" />
+</div>
 
 ---
 
