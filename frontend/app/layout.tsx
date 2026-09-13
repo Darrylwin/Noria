@@ -1,19 +1,25 @@
 import type {Metadata} from "next";
-import {Fraunces, Manrope} from "next/font/google";
+import {DM_Sans, Google_Sans, Urbanist} from "next/font/google";
 import "./globals.css";
 
-const fraunces = Fraunces({
+const googleSans = Google_Sans({
     subsets: ["latin"],
-    variable: "--font-fraunces",
-    weight: ["400", "500", "600"],
+    variable: "--font-display-raw",
     style: ["normal", "italic"],
     display: "swap",
 });
 
-const manrope = Manrope({
+const dmSans = DM_Sans({
     subsets: ["latin"],
-    variable: "--font-manrope",
-    weight: ["400", "500", "600", "700", "800"],
+    variable: "--font-sans-raw",
+    style: ["normal", "italic"],
+    display: "swap",
+});
+
+const urbanist = Urbanist({
+    subsets: ["latin"],
+    variable: "--font-accent-raw",
+    style: ["normal", "italic"],
     display: "swap",
 });
 
@@ -23,13 +29,15 @@ export const metadata: Metadata = {
         "Évaluez en quelques minutes le niveau de structuration de votre entreprise et identifiez vos leviers prioritaires.",
     icons: {
         icon: "/favicon.ico",
-        shortcut: "/favicon.ico",
     },
 };
 
 export default function RootLayout({children}: { children: React.ReactNode }) {
     return (
-        <html lang="fr" className={`${fraunces.variable} ${manrope.variable}`}>
+        <html
+            lang="fr"
+            className={`${googleSans.variable} ${dmSans.variable} ${urbanist.variable}`}
+        >
         <body className="bg-paper font-sans text-ink antialiased">{children}</body>
         </html>
     );

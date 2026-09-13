@@ -26,7 +26,7 @@ export default function IntroductionPage() {
                     <div className="mb-8 flex justify-center">
             <span
                 className="rounded-full border border-line bg-paper-raised px-4 py-1.5 font-sans text-[12px] font-semibold uppercase tracking-[0.12em] text-ink-soft">
-              ALODO · Diagnostic MPME
+              Noria · Diagnostic MPME
             </span>
                     </div>
 

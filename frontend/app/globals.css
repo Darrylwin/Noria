@@ -1,8 +1,9 @@
 @import "tailwindcss";
 
 @theme {
-    --font-display: var(--font-fraunces);
-    --font-sans: var(--font-manrope);
+    --font-display: var(--font-display-raw), "Segoe UI", system-ui, sans-serif;
+    --font-sans: var(--font-sans-raw), system-ui, sans-serif;
+    --font-accent: var(--font-accent-raw), var(--font-sans-raw), system-ui, sans-serif;
 
     /* Base */
     --color-ink: #15171f;
