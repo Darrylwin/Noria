@@ -83,8 +83,7 @@ en production réelle.
 - Un audit des dépendances (`npm audit`) doit être exécuté périodiquement, idéalement intégré au pipeline CI (
   `frontend-ci-cd.yml`) en tâche non bloquante dans un premier temps, puis bloquante sur les vulnérabilités critiques
   une fois le bruit initial trié.
-- Toute dépendance ajoutée au projet doit avoir une justification claire (voir cahier des charges, section 21 sur les
-  conventions) ; éviter d'ajouter une bibliothèque pour une fonctionnalité triviale qu'une fonction native ou quelques
+- Toute dépendance ajoutée au projet doit avoir une justification claire; éviter d'ajouter une bibliothèque pour une fonctionnalité triviale qu'une fonction native ou quelques
   lignes de code suffiraient à couvrir.
 
 ---
