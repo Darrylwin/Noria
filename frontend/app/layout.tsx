@@ -21,6 +21,10 @@ export const metadata: Metadata = {
     title: "Noria",
     description:
         "Évaluez en quelques minutes le niveau de structuration de votre entreprise et identifiez vos leviers prioritaires.",
+    icons: {
+        icon: "/favicon.ico",
+        shortcut: "/favicon.ico",
+    },
 };
 
 export default function RootLayout({children}: { children: React.ReactNode }) {
