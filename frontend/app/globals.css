@@ -1,26 +1,47 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+@theme {
+    --font-display: var(--font-fraunces);
+    --font-sans: var(--font-manrope);
+
+    /* Base */
+    --color-ink: #15171f;
+    --color-ink-soft: #5c5f70;
+    --color-paper: #faf7f0;
+    --color-paper-raised: #ffffff;
+    --color-line: #e8e2d4;
+
+    /* Accent — action principale, terracotta chaud, jamais un violet générique */
+    --color-accent: #c1502a;
+    --color-accent-soft: #f3ddd0;
+
+    /* Identité des 3 dimensions, distinctes au premier coup d'oeil */
+    --color-formalization: #3f4b8c;
+    --color-formalization-soft: #e4e6f4;
+    --color-accounting: #1f6f63;
+    --color-accounting-soft: #dcece7;
+    --color-funding: #ab7c33;
+    --color-funding-soft: #f2e6cd;
+
+    /* États sémantiques, alignés sur les niveaux de maturité renvoyés par l'API */
+    --color-success: #1f6f63;
+    --color-warning: #ab7c33;
+    --color-danger: #a63d2f;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+    color-scheme: light;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+    background-color: var(--color-paper);
+}
+
+::selection {
+    background-color: var(--color-accent-soft);
+    color: var(--color-ink);
+}
+
+* {
+    -webkit-tap-highlight-color: transparent;
 }
