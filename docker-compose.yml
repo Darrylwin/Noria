@@ -1,0 +1,20 @@
+# Compose la stack complète à partir des fichiers de chaque application.
+#
+# Ce fichier n'ajoute que ce qui n'a de sens QUE lorsque les deux applications
+# tournent ensemble : l'ordre de démarrage (le frontend attend une API saine
+# avant de démarrer).
+#
+# Nécessite Docker Compose >= 2.20 (support de `include`).
+
+include:
+  - backend/docker-compose.yml
+  - frontend/docker-compose.yml
+
+services:
+  # Docker Compose fusionne cette entrée avec le service "frontend" déjà défini
+  # dans frontend/docker-compose.yml (même règle de fusion que plusieurs -f) :
+  # on ajoute une contrainte, on ne redéfinit rien d'existant.
+  frontend:
+    depends_on:
+      api:
+        condition: service_healthy
