@@ -36,7 +36,6 @@ async function answerAllAndAdvance(
 ) {
     for (let i = 0; i < count; i += 1) {
         act(() => result.current.answerCurrent("B"));
-        // eslint-disable-next-line no-await-in-loop
         await act(async () => {
             await result.current.goNext();
         });

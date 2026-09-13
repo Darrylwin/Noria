@@ -21,6 +21,7 @@ interface UseDiagnosticWizardResult {
     questions: QuestionDefinition[];
     isLoadingQuestions: boolean;
     loadError: string | null;
+    retryLoad: () => void;
     currentIndex: number;
     currentQuestion: QuestionDefinition | null;
     answers: Partial<Record<QuestionCode, AnswerCode>>;
@@ -45,6 +46,7 @@ export function useDiagnosticWizard(mode: WizardMode): UseDiagnosticWizardResult
     const [questions, setQuestions] = useState<QuestionDefinition[]>([]);
     const [isLoadingQuestions, setIsLoadingQuestions] = useState(true);
     const [loadError, setLoadError] = useState<string | null>(null);
+    const [loadAttempt, setLoadAttempt] = useState(0);
 
     const [answers, setAnswers] = useState<Partial<Record<QuestionCode, AnswerCode>>>({});
     const [currentIndex, setCurrentIndex] = useState(0);
@@ -55,6 +57,10 @@ export function useDiagnosticWizard(mode: WizardMode): UseDiagnosticWizardResult
 
     useEffect(() => {
         let cancelled = false;
+
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        setIsLoadingQuestions(true);
+        setLoadError(null);
 
         async function load() {
             try {
@@ -73,11 +79,13 @@ export function useDiagnosticWizard(mode: WizardMode): UseDiagnosticWizardResult
                 } else {
                     diagnosticStorage.clear();
                 }
-            } catch {
+            } catch (err) {
                 if (!cancelled) {
-                    setLoadError(
-                        "Impossible de charger le questionnaire. Vérifiez votre connexion et réessayez.",
-                    );
+                    const message =
+                        err instanceof ApiError
+                            ? err.message
+                            : "Impossible de charger le questionnaire. Vérifiez votre connexion et réessayez.";
+                    setLoadError(message);
                 }
             } finally {
                 if (!cancelled) setIsLoadingQuestions(false);
@@ -90,7 +98,9 @@ export function useDiagnosticWizard(mode: WizardMode): UseDiagnosticWizardResult
         };
         // "mode" est figé pour la durée de vie de la page (dépend du paramètre d'URL initial).
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+    }, [loadAttempt]);
+
+    const retryLoad = useCallback(() => setLoadAttempt((n) => n + 1), []);
 
     const currentQuestion = questions[currentIndex] ?? null;
     const isLastQuestion = currentIndex === questions.length - 1;
@@ -175,14 +185,14 @@ export function useDiagnosticWizard(mode: WizardMode): UseDiagnosticWizardResult
 
     return useMemo(
         () => ({
-            questions, isLoadingQuestions, loadError, currentIndex, currentQuestion, answers,
-            answerCurrent, goNext, goPrevious, canGoPrevious, isLastQuestion, submissionStatus,
-            submissionError, retrySubmit, resultId,
+            questions, isLoadingQuestions, loadError, retryLoad, currentIndex, currentQuestion,
+            answers, answerCurrent, goNext, goPrevious, canGoPrevious, isLastQuestion,
+            submissionStatus, submissionError, retrySubmit, resultId,
         }),
         [
-            questions, isLoadingQuestions, loadError, currentIndex, currentQuestion, answers,
-            answerCurrent, goNext, goPrevious, canGoPrevious, isLastQuestion, submissionStatus,
-            submissionError, retrySubmit, resultId,
+            questions, isLoadingQuestions, loadError, retryLoad, currentIndex, currentQuestion,
+            answers, answerCurrent, goNext, goPrevious, canGoPrevious, isLastQuestion,
+            submissionStatus, submissionError, retrySubmit, resultId,
         ],
     );
 }

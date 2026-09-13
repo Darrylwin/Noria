@@ -62,7 +62,7 @@ function QuestionnaireContent() {
                 eyebrow="Erreur"
                 title="Impossible de charger le questionnaire"
                 description={wizard.loadError}
-                action={<Button onClick={() => window.location.reload()}>Réessayer</Button>}
+                action={<Button onClick={wizard.retryLoad}>Réessayer</Button>}
             />
         );
     }
@@ -85,8 +85,10 @@ function QuestionnaireContent() {
                 {wizard.submissionStatus === "error" && (
                     <div className="mt-6 rounded-2xl border border-danger/25 bg-danger/[0.06] p-4">
                         <p className="font-sans text-[14px] text-danger">{wizard.submissionError}</p>
-                        <button onClick={wizard.retrySubmit}
-                                className="mt-2 font-sans text-[14px] font-semibold underline underline-offset-2">
+                        <button
+                            onClick={wizard.retrySubmit}
+                            className="mt-2 font-sans text-[14px] font-semibold underline underline-offset-2"
+                        >
                             Réessayer l&apos;envoi
                         </button>
                     </div>

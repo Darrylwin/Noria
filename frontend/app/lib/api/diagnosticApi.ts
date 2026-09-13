@@ -2,6 +2,7 @@ import {DiagnosticResult, DiagnosticSubmitPayload, QuestionDefinition} from "../
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001";
 const API_PREFIX = "/api/v1";
+const DEFAULT_TIMEOUT_MS = 10_000;
 
 interface HttpErrorBody {
     statusCode: number;
@@ -42,18 +43,25 @@ function resolveErrorMessage(status: number, body: HttpErrorBody | null): string
 }
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
-    let response: Response;
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), DEFAULT_TIMEOUT_MS);
 
+    let response: Response;
     try {
         response = await fetch(`${API_BASE_URL}${API_PREFIX}${path}`, {
             ...init,
+            signal: controller.signal,
             headers: {"Content-Type": "application/json", ...init?.headers},
         });
-    } catch {
-        // Serveur injoignable, timeout, coupure réseau : jamais de détail technique exposé.
+    } catch (err) {
+        if (err instanceof DOMException && err.name === "AbortError") {
+            throw new ApiError("Le serveur met trop de temps à répondre. Réessayez.");
+        }
         throw new ApiError(
             "Impossible de contacter le serveur. Vérifiez votre connexion et réessayez.",
         );
+    } finally {
+        clearTimeout(timer);
     }
 
     if (!response.ok) {
