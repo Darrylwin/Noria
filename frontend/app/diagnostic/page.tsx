@@ -1,6 +1,6 @@
 "use client";
 
-import {Suspense, useEffect} from "react";
+import {Suspense, useEffect, useState} from "react";
 import {useRouter, useSearchParams} from "next/navigation";
 import {Container} from "@/app/components/ui/Container";
 import {ProgressBar} from "@/app/components/diagnostic/ProgressBar";
@@ -9,12 +9,30 @@ import {Button} from "@/app/components/ui/Button";
 import {StateScreen} from "@/app/components/ui/StateScreen";
 import {useDiagnosticWizard} from "@/app/hooks/useDiagnosticWizard";
 
+// Au-delà de ce délai, on considère que le chargement initial est anormalement
+// long : cas typique d'un "cold start" sur un hébergement serverless gratuit.
+// En dessous, on affiche un simple écran de chargement neutre pour ne pas
+// inquiéter inutilement l'utilisateur sur un chargement rapide normal.
+const SLOW_LOADING_THRESHOLD_MS = 2500;
+
 function QuestionnaireContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const mode = searchParams.get("mode") === "new" ? "new" : "resume";
 
     const wizard = useDiagnosticWizard(mode);
+    const [isLoadingSlowly, setIsLoadingSlowly] = useState(false);
+
+    useEffect(() => {
+        if (!wizard.isLoadingQuestions) {
+            // eslint-disable-next-line react-hooks/set-state-in-effect
+            setIsLoadingSlowly(false);
+            return;
+        }
+
+        const timer = setTimeout(() => setIsLoadingSlowly(true), SLOW_LOADING_THRESHOLD_MS);
+        return () => clearTimeout(timer);
+    }, [wizard.isLoadingQuestions]);
 
     useEffect(() => {
         if (wizard.submissionStatus === "success" && wizard.resultId) {
@@ -23,8 +41,19 @@ function QuestionnaireContent() {
     }, [wizard.submissionStatus, wizard.resultId, router]);
 
     if (wizard.isLoadingQuestions) {
-        return <StateScreen eyebrow="Chargement" title="Préparation de votre diagnostic…"
-                            description="Un instant, nous chargeons le questionnaire."/>;
+        return isLoadingSlowly ? (
+            <StateScreen
+                eyebrow="Presque prêt"
+                title="Le serveur se réveille…"
+                description="Notre hébergement gratuit met parfois quelques secondes à démarrer après une période d'inactivité. Merci de patienter, ça ne devrait plus être long - désolé pour le désagrément."
+            />
+        ) : (
+            <StateScreen
+                eyebrow="Chargement"
+                title="Préparation de votre diagnostic…"
+                description="Un instant, nous chargeons le questionnaire."
+            />
+        );
     }
 
     if (wizard.loadError) {
