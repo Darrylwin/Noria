@@ -13,7 +13,7 @@ import {useDiagnosticWizard} from "@/app/hooks/useDiagnosticWizard";
 // long : cas typique d'un "cold start" sur un hébergement serverless gratuit.
 // En dessous, on affiche un simple écran de chargement neutre pour ne pas
 // inquiéter inutilement l'utilisateur sur un chargement rapide normal.
-const SLOW_LOADING_THRESHOLD_MS = 2500;
+const SLOW_LOADING_THRESHOLD_MS = 8_000;
 
 function QuestionnaireContent() {
     const router = useRouter();

@@ -2,7 +2,7 @@ import {DiagnosticResult, DiagnosticSubmitPayload, QuestionDefinition} from "../
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001";
 const API_PREFIX = "/api/v1";
-const DEFAULT_TIMEOUT_MS = 10_000;
+const DEFAULT_TIMEOUT_MS = 30_000;
 
 interface HttpErrorBody {
     statusCode: number;
