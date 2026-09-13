@@ -1,0 +1,72 @@
+name: Frontend Release
+
+on:
+  push:
+    tags:
+      - 'frontend-v*'
+
+jobs:
+  test:
+    name: Run Frontend Tests
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: frontend
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Run Tests (Vitest)
+        run: npm test
+
+      - name: Build
+        run: npm run build
+        env:
+          NEXT_PUBLIC_API_URL: "http://localhost:3001"
+
+  release:
+    name: Create GitHub Release
+    needs: test
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Extract Tag Version
+        id: get_version
+        run: |
+          # Extrait la version (ex: si tag = frontend-v1.0.0 -> VERSION = 1.0.0)
+          TAG_NAME="${{ github.ref_name }}"
+          VERSION="${TAG_NAME#frontend-v}"
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: Frontend Release v${{ env.VERSION }}
+          body: |
+            ### Frontend Release v${{ env.VERSION }}
+            Automated release for tag `${{ github.ref_name }}`.
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
