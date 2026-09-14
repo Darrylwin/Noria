@@ -17,13 +17,15 @@
 
 ## Démo
 
-**[Essayer NORIA en ligne](https://noria-teal.vercel.app/)**
+**[Essayez Noria par vous-même en ligne](https://noria-teal.vercel.app/)**
 
 > **Hébergement serverless gratuit** (backend) : le tout premier appel après une période
 > d'inactivité peut prendre quelques secondes supplémentaires, le temps que le service se réveille. C'est normal,
 > merci de patienter - l'application affiche d'ailleurs un message dédié si ce délai se prolonge.
 
-[![Regarder la démo (3 min)](assets/thumbnail.png)](https://youtu.be/ldOgISXQLLY)
+**[Regarder la démo vidéo (3 min)](https://youtu.be/ldOgISXQLLY)**
+
+[![Aperçu de la démo](assets/thumbnail.png)](https://youtu.be/ldOgISXQLLY)
 
 ---
 
