@@ -22,9 +22,8 @@
 > **Hébergement serverless gratuit** (backend) : le tout premier appel après une période
 > d'inactivité peut prendre quelques secondes supplémentaires, le temps que le service se réveille. C'est normal,
 > merci de patienter - l'application affiche d'ailleurs un message dédié si ce délai se prolonge.
-<!--
-[![Regarder la démo (2 min)](https://img.youtube.com/vi/TON_ID_VIDEO/maxresdefault.jpg)](https://youtu.be/TON_ID_VIDEO)
--->
+
+[![Regarder la démo (3 min)](assets/thumbnail.png)](https://youtu.be/ldOgISXQLLY)
 
 ---
 
