@@ -1,0 +1,16 @@
+# Fichiers d'environnement virtuel (À ne jamais commit)
+.venv/
+venv/
+
+# Cache Python et fichiers compilés
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Configuration de l'IDE / Éditeur de code
+.vscode/
+.idea/
+
+# Fichiers de configuration locale et variables d'environnement
+.env
