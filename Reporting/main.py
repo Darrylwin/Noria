@@ -25,6 +25,7 @@ import zipfile
 from email.message import EmailMessage
 from pathlib import Path
 
+
 # --------------------------------------------------------------------------
 # Configuration
 # --------------------------------------------------------------------------
@@ -207,7 +208,7 @@ def generate_report_text(diff: str) -> str:
     completion = client.chat.completions.create(
         model=GROQ_MODEL,
         max_tokens=1200,
-        messages=[
+        messages=[  # noqa
             {"role": "system", "content": REPORT_SYSTEM_PROMPT},
             {"role": "user", "content": f"Diff du jour :\n\n{diff_excerpt}"},
         ],
