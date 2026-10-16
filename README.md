@@ -196,17 +196,18 @@ déjà interprété (niveau de maturité, point fort, axe d'amélioration, recom
 
 ### Prérequis
 
-- Node.js ≥ 22
-- Docker (pour PostgreSQL en local, ou pour tout exécuter en conteneurs)
+- **Option A (Docker)** : Docker uniquement.
+- **Option B (natif)** : Node.js ≥ 22 et PostgreSQL (avec Docker).
 
-### Option A - Exécution complète via Docker (recommandé pour une démonstration)
+### Option A - Exécution complète via Docker
 
 ```bash
 git clone https://github.com/Darrylwin/Noria.git Noria
 cd Noria
 
-# Copier les variables d'environnement racine (valeurs de dev déjà fournies par défaut)
 cp .env.example .env
+cp frontend/.env.example frontend/.env
+cp backend/.env.example backend/.env
 
 docker compose up --build
 ```
@@ -214,6 +215,12 @@ docker compose up --build
 - Frontend : [http://localhost:3000](http://localhost:3000)
 - API : [http://localhost:3001](http://localhost:3001)
 - Documentation Swagger interactive : [http://localhost:3001/docs](http://localhost:3001/docs)
+
+Pour arrêter et supprimer les conteneurs :
+
+```bash
+docker compose down
+```
 
 ### Option B - Exécution native (développement)
 
